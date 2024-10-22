@@ -1,0 +1,233 @@
+﻿FID,ECO_CODE,ECOREGION,PROV_CODE,PROVINCE,RLM_CODE,REALM,ALT_CODE,ECO_CODE_X,Lat_Zone,SHAPE_Length,SHAPE_Area
+1,20192,Agulhas Bank,51,Agulhas,10,Temperate Southern Africa,189,192,Temperate,3950757.3359956,889857429391.459
+2,20053,Aleutian Islands,10,Cold Temperate Northeast Pacific,3,Temperate Northern Pacific,50,53,Temperate,10409934.0652139,3242660888254.17
+3,20072,Amazonia,13,North Brazil Shelf,4,Tropical Atlantic,64,72,Tropical,5193984.89151028,1545699047088.42
+4,20194,Amsterdam-St Paul,52,Amsterdam-St Paul,10,Temperate Southern Africa,191,194,Temperate,2924451.65912949,644211776333.501
+5,20228,Amundsen/Bellingshausen Sea,61,Continental High Antarctic,12,Southern Ocean,209,228,Polar,25670711.1102613,24031951962792.7
+6,20109,Andaman and Nicobar Islands,24,Andaman,5,Western Indo-Pacific,105,109,Tropical,3677655.56883635,815757273421.452
+7,20110,Andaman Sea Coral Coast,24,Andaman,5,Western Indo-Pacific,106,110,Tropical,2695666.91654902,345451319472.05
+8,20223,Antarctic Peninsula,60,Scotia Sea,12,Southern Ocean,215,223,Polar,13014538.8499934,4172086775896.58
+9,20090,Arabian (Persian) Gulf,19,Somali/Arabian,5,Western Indo-Pacific,92,90,Tropical,5094760.96861841,1602352165320.14
+10,20178,Araucanian,45,Warm Temperate Southeastern Pacific,9,Temperate South America,172,178,Temperate,3819453.96686095,888566352411.008
+11,20140,Arnhem Coast to Gulf of Carpenteria,32,Sahul Shelf,6,Central Indo-Pacific,132,140,Tropical,5017986.42815642,1398406463542.54
+12,20139,Arafura Sea,32,Sahul Shelf,6,Central Indo-Pacific,133,139,Tropical,3082308.44921429,629616797112.801
+13,20232,Auckland Island,62,Subantarctic New Zealand,12,Southern Ocean,227,232,Polar,2718260.77769031,434502184793.175
+14,20029,Azores Canaries Madeira,3,Lusitanian,2,Temperate Northern Atlantic,36,29,Temperate,8514682.31241188,2468221761148.24
+15,25007,Baffin Bay - Davis Strait,1,Arctic,1,Arctic,1,7,Polar,13557511.3276037,5113579889394.27
+16,20063,Bahamian,12,Tropical Northwestern Atlantic,4,Tropical Atlantic,66,63,Tropical,5156521.47500465,1154441878687.9
+17,20024,Baltic Sea,2,Northern European Seas,2,Temperate Northern Atlantic,29,24,Temperate,9860120.33838378,5556949767731.17
+18,20131,Banda Sea,30,Western Coral Triangle,6,Central Indo-Pacific,120,131,Tropical,4817664.72863417,1041182983990.87
+19,20205,Bassian,56,Southeast Australian Shelf,11,Temperate Australasia,197,205,Temperate,5315531.10191169,1123339618656.65
+20,20011,Beaufort-Amundsen-Viscount Melville-Queen Maud,1,Arctic,1,Arctic,19,11,Polar,17904766.8392446,12797879263914.1
+21,20012,Beaufort Sea - continental coast and shelf,1,Arctic,1,Arctic,18,12,Polar,11779429.6019716,7279429763060.44
+22,20062,Bermuda,12,Tropical Northwestern Atlantic,4,Tropical Atlantic,67,62,Tropical,2606649.65973137,532256334707.045
+23,20134,Bismarck Sea,31,Eastern Coral Triangle,6,Central Indo-Pacific,128,134,Tropical,3839910.48703749,888427367311.731
+24,20044,Black Sea,7,Black Sea,2,Temperate Northern Atlantic,41,44,Temperate,6223311.19498621,2671920553921.73
+25,20141,Bonaparte Coast,32,Sahul Shelf,6,Central Indo-Pacific,134,141,Tropical,4309819.59985376,923167688649.731
+26,25230,Bounty and Antipodes Islands,62,Subantarctic New Zealand,12,Southern Ocean,228,230,Polar,6470314.32105138,914448120529.591
+27,20217,Bouvet Island,59,Subantarctic Islands,12,Southern Ocean,220,217,Polar,3272671.59480851,761201973593.61
+28,20231,Campbell Island,62,Subantarctic New Zealand,12,Southern Ocean,229,231,Polar,2996122.96662211,591064923163.107
+29,20204,Cape Howe,56,Southeast Australian Shelf,11,Temperate Australasia,198,204,Temperate,3089713.13769137,647739247418.317
+30,20079,Cape Verde,16,West African Transition,4,Tropical Atlantic,75,79,Tropical,3312603.76905782,838190722360.78
+31,20097,Cargados Carajos/Tromelin Island,20,Western Indian Ocean,5,Western Indo-Pacific,83,97,Tropical,3543188.77862829,871152177194.695
+32,25042,Carolinian,6,Warm Temperate Northwest Atlantic,2,Temperate Northern Atlantic,21,42,Temperate,3843392.45514844,815791074473.949
+33,20026,Celtic Seas,2,Northern European Seas,2,Temperate Northern Atlantic,30,26,Temperate,7249926.87401831,2835816845922.8
+34,20177,Central Chile,45,Warm Temperate Southeastern Pacific,9,Temperate South America,173,177,Temperate,3614414.778607,789234842687.076
+35,20051,Central Kuroshio Current,9,Warm Temperate Northwest Pacific,3,Temperate Northern Pacific,42,51,Temperate,4624122.33707801,1007729667224.95
+36,25199,Central New Zealand,54,Southern New Zealand,11,Temperate Australasia,205,199,Temperate,6205372.18919534,1570638072464.36
+37,20175,Central Peru,45,Warm Temperate Southeastern Pacific,9,Temperate South America,174,175,Temperate,3509695.59290312,650552575107.812
+38,20093,Central Somali Coast,19,Somali/Arabian,5,Western Indo-Pacific,93,93,Tropical,3680951.85868291,774659527791.983
+39,20106,Chagos,22,Central Indian Ocean Islands,5,Western Indo-Pacific,101,106,Tropical,2909637.21671292,641098372561.444
+40,20187,Channels and Fjords of Southern Chile,48,Magellanic,9,Temperate South America,176,187,Temperate,7923004.12347936,2655818465446.06
+41,25198,Chatham Island,54,Southern New Zealand,11,Temperate Australasia,206,198,Temperate,3656526.83776126,716609070726.798
+42,20167,Chiapas-Nicaragua,43,Tropical East Pacific,8,Tropical Eastern Pacific,163,167,Tropical,3387767.56386048,650180850026.573
+43,20188,Chiloense,48,Magellanic,9,Temperate South America,177,188,Temperate,4004039.03984191,873835505850.365
+44,20013,Chukchi Sea,1,Arctic,1,Arctic,16,13,Polar,16567062.751746,7957298834445.93
+45,20165,Clipperton,43,Tropical East Pacific,8,Tropical Eastern Pacific,164,165,Tropical,2381244.40310836,451117705641.344
+46,20120,Cocos-Keeling/Christmas Island,27,Java Transitional,6,Central Indo-Pacific,108,120,Tropical,4717130.48741706,868837941365.185
+47,20169,Cocos Islands,43,Tropical East Pacific,8,Tropical Eastern Pacific,165,169,Tropical,2174004.80185163,340752722550.982
+48,20150,Coral Sea,35,Tropical Southwestern Pacific,6,Central Indo-Pacific,143,150,Tropical,4558638.98218558,819305128529.022
+49,20060,Cortezian,11,Warm Temperate Northeast Pacific,3,Temperate Northern Pacific,56,60,Temperate,5426550.07671783,1335823169485.65
+50,20215,Crozet Islands,59,Subantarctic Islands,12,Southern Ocean,221,215,Polar,3426773.99009109,904009341115.926
+51,20102,Delagoa,20,Western Indian Ocean,5,Western Indo-Pacific,84,102,Tropical,3523975.59850072,764637625886.795
+52,20124,East Caroline Islands,29,Tropical Northwestern Pacific,6,Central Indo-Pacific,139,124,Tropical,7449770.28050231,2275438480403.91
+53,20225,East Antarctic Enderby Land,61,Continental High Antarctic,12,Southern Ocean,210,225,Polar,7636131.28132206,2894989383121.49
+54,20224,East Antarctic Wilkes Land,61,Continental High Antarctic,12,Southern Ocean,211,224,Polar,36588506.9642113,27760520940310.3
+55,20226,East Antarctic Dronning Maud Land,61,Continental High Antarctic,12,Southern Ocean,212,226,Polar,16759675.7719835,11510915004153.1
+56,20052,East China Sea,9,Warm Temperate Northwest Pacific,3,Temperate Northern Pacific,43,52,Temperate,5914404.49232978,1612835545295.21
+57,20003,East Greenland Shelf,1,Arctic,1,Arctic,7,3,Polar,16598953.4898025,9856004184535.83
+58,20015,East Siberian Sea,1,Arctic,1,Arctic,15,15,Polar,19027441.167088,18446093464337.1
+59,20163,Easter Island,42,Easter Island,7,Eastern Indo-Pacific,159,163,Tropical,3451807.75964659,836003250415.328
+60,25014,Eastern Bering Sea,1,Arctic,1,Arctic,17,14,Polar,14282805.0384609,6627300862077.66
+61,20076,Eastern Brazil,14,Tropical Southwestern Atlantic,4,Tropical Atlantic,59,76,Tropical,4808744.87995952,1186241928703.47
+62,20064,Eastern Caribbean,12,Tropical Northwestern Atlantic,4,Tropical Atlantic,68,64,Tropical,4212450.44896727,933226957485.887
+63,20173,Eastern Galapagos Islands,44,Galapagos,8,Tropical Eastern Pacific,160,173,Tropical,2487048.85073433,401804906028.862
+64,20107,Eastern India,23,Bay of Bengal,5,Western Indo-Pacific,103,107,Tropical,4235142.25818626,1070635231464.83
+65,20127,Eastern Philippines,30,Western Coral Triangle,6,Central Indo-Pacific,121,127,Tropical,4943243.63589977,1243494790471.53
+66,20144,Exmouth to Broome,34,Northwest Australian Shelf,6,Central Indo-Pacific,110,144,Tropical,5058627.55042209,1088949146444.19
+67,20021,Faroe Plateau,2,Northern European Seas,2,Temperate Northern Atlantic,31,21,Temperate,3998589.01724091,973651283913.024
+68,20074,Fernando de Naronha and Atoll das Rocas,14,Tropical Southwestern Atlantic,4,Tropical Atlantic,60,74,Tropical,2115309.36833699,313660444968.613
+69,25147,Fiji Islands,35,Tropical Southwestern Pacific,6,Central Indo-Pacific,144,147,Tropical,5996044.54918862,886961835099.896
+70,20070,Floridian,12,Tropical Northwestern Atlantic,4,Tropical Atlantic,69,70,Tropical,2190452.55809022,299777298870.853
+71,25154,Gilbert/Ellis Islands,38,"Marshall, Gilbert and Ellis Islands",7,Eastern Indo-Pacific,148,154,Tropical,10772168.3544748,2288620450603.88
+72,20208,Great Australian Bight,57,Southwest Australian Shelf,11,Temperate Australasia,194,208,Temperate,4234030.90574301,1047086597482.89
+73,20171,Guayaquil,43,Tropical East Pacific,8,Tropical Eastern Pacific,166,171,Tropical,2783883.13187154,506476127604.494
+74,20071,Guianan,13,North Brazil Shelf,4,Tropical Atlantic,65,71,Tropical,4296692.42622654,1087173632645.2
+75,20089,Gulf of Aden,18,Red Sea and Gulf of Aden,5,Western Indo-Pacific,96,89,Tropical,5441906.98382156,1172366185104.72
+76,20054,Gulf of Alaska,10,Cold Temperate Northeast Pacific,3,Temperate Northern Pacific,51,54,Temperate,10520086.5312722,4664793323431.08
+77,20083,Gulf of Guinea Central,17,Gulf of Guinea,4,Tropical Atlantic,77,83,Tropical,5136097.45996152,1226117146752.93
+78,20084,Gulf of Guinea Islands,17,Gulf of Guinea,4,Tropical Atlantic,78,84,Tropical,2492104.61741143,415642813018.175
+79,20082,Gulf of Guinea Upwelling,17,Gulf of Guinea,4,Tropical Atlantic,80,82,Tropical,3368240.80854087,671025787689.362
+80,25081,Gulf of Guinea West,17,Gulf of Guinea,4,Tropical Atlantic,81,81,Tropical,4441316.24913465,1081515908165.69
+81,25040,Gulf of Maine/Bay of Fundy,5,Cold Temperate Northwest Atlantic,2,Temperate Northern Atlantic,22,40,Temperate,4323887.78989198,643993911783.79
+82,20091,Gulf of Oman,19,Somali/Arabian,5,Western Indo-Pacific,94,91,Tropical,3790130.53657827,861390711294.678
+83,20138,Gulf of Papua,32,Sahul Shelf,6,Central Indo-Pacific,135,138,Tropical,1874427.1733259,168997391932.12
+84,20037,Gulf of St. Lawrence - Eastern Scotian Shelf,5,Cold Temperate Northwest Atlantic,2,Temperate Northern Atlantic,23,37,Temperate,8742348.57498547,2472768907436.23
+85,20115,Gulf of Thailand,26,Sunda Shelf,6,Central Indo-Pacific,113,115,Tropical,3437634.09188263,676020757607.572
+86,20112,Gulf of Tonkin,25,South China Sea,6,Central Indo-Pacific,116,112,Tropical,4811504.51372981,1506025236376.07
+87,20129,Halmahera,30,Western Coral Triangle,6,Central Indo-Pacific,122,129,Tropical,2116610.49951928,297203222275.126
+88,25152,Hawaii,37,Hawaii,7,Eastern Indo-Pacific,158,152,Tropical,11831534.167957,3166035417239.82
+89,20213,Heard and Macdonald Islands,59,Subantarctic Islands,12,Southern Ocean,222,213,Polar,3211210.41584332,717031743528.15
+90,20211,Houtman,58,West Central Australian Shelf,11,Temperate Australasia,192,211,Temperate,2632262.22107196,440362396356.744
+91,20008,Hudson Complex,1,Arctic,1,Arctic,3,8,Polar,16359052.9042449,12597619240342.5
+92,20176,Humboldtian,45,Warm Temperate Southeastern Pacific,9,Temperate South America,175,176,Temperate,5417574.32027805,1434298312828.71
+93,20179,Juan Fernandez and Desventuradas,46,Juan Fernandez and Desventuradas,9,Temperate South America,171,179,Temperate,5544443.56515606,1207057902624.69
+94,25046,Kamchatka Shelf and Coast,8,Cold Temperate Northwest Pacific,3,Temperate Northern Pacific,44,46,Temperate,11148393.7447082,4135392433114.53
+95,20017,Kara Sea,1,Arctic,1,Arctic,13,17,Polar,34601168.6782432,33667055018067.2
+96,20214,Kerguelen Islands,59,Subantarctic Islands,12,Southern Ocean,223,214,Polar,3615140.07046632,954779730876.62
+97,25195,Kermadec Island,53,Northern New Zealand,11,Temperate Australasia,202,195,Temperate,5222410.66390182,746185154724.27
+98,25009,Lancaster Sound,1,Arctic,1,Arctic,4,9,Polar,12454416.5929369,6507521079378.55
+99,20016,Laptev Sea,1,Arctic,1,Arctic,14,16,Polar,21277506.3872645,17987859588794.3
+100,20209,Leeuwin,57,Southwest Australian Shelf,11,Temperate Australasia,195,209,Temperate,4337628.39270709,1201049061622.39
+101,20132,Lesser Sunda,30,Western Coral Triangle,6,Central Indo-Pacific,123,132,Tropical,3945395.48258511,748540491759.739
+102,20155,Line Islands,39,Central Polynesia,7,Eastern Indo-Pacific,150,155,Tropical,5458350.52582081,1506826969592.01
+103,20151,Lord Howe and Norfolk Islands,36,Lord Howe and Norfolk Islands,6,Central Indo-Pacific,138,151,Tropical,5125045.12009189,1001198775379.2
+104,20212,Macquarie Island,59,Subantarctic Islands,12,Southern Ocean,224,212,Polar,3347314.44408959,785259040157.863
+105,20061,Magdalena Transition,11,Warm Temperate Northeast Pacific,3,Temperate Northern Pacific,57,61,Temperate,2139524.88748768,251231715902.118
+106,20118,Malacca Strait,26,Sunda Shelf,6,Central Indo-Pacific,112,118,Tropical,3166235.69115988,358350169495.875
+107,20105,Maldives,22,Central Indian Ocean Islands,5,Western Indo-Pacific,102,105,Tropical,4989295.30346192,1322805991308.01
+108,20186,Malvinas/Falklands,48,Magellanic,9,Temperate South America,178,186,Temperate,3923836.75058891,1114733901351.13
+109,20203,Manning-Hawkesbury,55,East Central Australian Shelf,11,Temperate Australasia,200,203,Temperate,2793450.33469432,483709217865.857
+110,20123,Mariana Islands,29,Tropical Northwestern Pacific,6,Central Indo-Pacific,140,123,Tropical,4137374.54270168,1084813694782.98
+111,20158,Tuamotus,40,Southeast Polynesia,7,Eastern Indo-Pacific,156,158,Tropical,8295153.35362058,2658762262021.06
+112,20153,Marshall Islands,38,"Marshall, Gilbert and Ellis Islands",7,Eastern Indo-Pacific,149,153,Tropical,7253453.03613826,2308206472656.11
+113,20098,Mascarene Islands,20,Western Indian Ocean,5,Western Indo-Pacific,85,98,Tropical,4647484.92834747,1155780521380.08
+114,20166,Mexican Tropical Pacific,43,Tropical East Pacific,8,Tropical Eastern Pacific,167,166,Tropical,5321418.64654759,1005816056526.62
+115,20191,Namaqua,50,Benguela,10,Temperate Southern Africa,187,191,Temperate,4197725.25938725,950761765829.846
+116,25190,Namib,50,Benguela,10,Temperate Southern Africa,188,190,Temperate,4016022.83326322,915500092222.318
+117,20193,Natal,51,Agulhas,10,Temperate Southern Africa,190,193,Temperate,3536971.21862973,781379773152.178
+118,20149,New Caledonia,35,Tropical Southwestern Pacific,6,Central Indo-Pacific,145,149,Tropical,4720866.35888973,1370958647191.12
+119,20168,Nicoya,43,Tropical East Pacific,8,Tropical Eastern Pacific,168,168,Tropical,2748099.01723792,337547919676.932
+120,20145,Ningaloo,34,Northwest Australian Shelf,6,Central Indo-Pacific,111,145,Tropical,2341098.67192755,202035129444.84
+121,25055,North American Pacific Fijordland,10,Cold Temperate Northeast Pacific,3,Temperate Northern Pacific,52,55,Temperate,7595904.03664132,2940244305231.83
+122,20001,North Greenland,1,Arctic,1,Arctic,8,1,Polar,36391413.9823993,44322434030099.1
+123,25184,North Patagonian Gulfs,48,Magellanic,9,Temperate South America,179,184,Temperate,4884629.23713034,1037836706963.45
+124,20133,Northeast Sulawesi,30,Western Coral Triangle,6,Central Indo-Pacific,124,133,Tropical,1498396.32119022,112467487810.609
+125,20075,Northeastern Brazil,14,Tropical Southwestern Atlantic,4,Tropical Atlantic,61,75,Tropical,4963275.17947872,1196603872249.88
+126,20048,Northeastern Honshu,8,Cold Temperate Northwest Pacific,3,Temperate Northern Pacific,45,48,Temperate,3278578.08226484,483360464546.251
+127,25196,Northeastern New Zealand,53,Northern New Zealand,11,Temperate Australasia,203,196,Temperate,4791566.49322458,612937213299.553
+128,20087,Northern and Central Red Sea,18,Red Sea and Gulf of Aden,5,Western Indo-Pacific,97,87,Tropical,4718686.19444163,1388486749865.57
+129,20108,Northern Bay of Bengal,23,Bay of Bengal,5,Western Indo-Pacific,104,108,Tropical,5510601.32993804,1746700871971.52
+130,25058,Northern California,10,Cold Temperate Northeast Pacific,3,Temperate Northern Pacific,53,58,Temperate,4196455.56347323,928281052853.057
+131,20172,Northern Galapagos Islands,44,Galapagos,8,Tropical Eastern Pacific,161,172,Tropical,1796593.43411038,215495246634.995
+132,20005,Northern Grand Banks - Southern Labrador,1,Arctic,1,Arctic,5,5,Polar,6275046.19651835,1450688820435.84
+133,20043,Northern Gulf of Mexico,6,Warm Temperate Northwest Atlantic,2,Temperate Northern Atlantic,20,43,Temperate,6151694.51088263,1889320240770.44
+134,20006,Northern Labrador,1,Arctic,1,Arctic,6,6,Polar,8756237.38735091,2632314389132.81
+135,20122,Ogasawara Islands,29,Tropical Northwestern Pacific,6,Central Indo-Pacific,141,122,Tropical,6145215.13229693,1395151996766.51
+136,25057,"Oregon, Washington, Vancouver Coast and Shelf",10,Cold Temperate Northeast Pacific,3,Temperate Northern Pacific,54,57,Temperate,5200386.28135317,1124751234348.15
+137,20047,Oyashio Current,8,Cold Temperate Northwest Pacific,3,Temperate Northern Pacific,46,47,Temperate,6269166.78346968,1998314418417.96
+138,20126,Palawan/North Borneo,30,Western Coral Triangle,6,Central Indo-Pacific,125,126,Tropical,4426775.07309469,879703269647.06
+139,20170,Panama Bight,43,Tropical East Pacific,8,Tropical Eastern Pacific,169,170,Tropical,3987543.37669168,918494057104.023
+140,20130,Papua,30,Western Coral Triangle,6,Central Indo-Pacific,126,130,Tropical,4029369.42293798,862876122427.466
+141,25185,Patagonian Shelf,48,Magellanic,9,Temperate South America,180,185,Temperate,6904565.19924614,1298212838537.87
+142,20218,Peter the First Island,59,Subantarctic Islands,12,Southern Ocean,225,218,Polar,3702384.02707964,882332763990.555
+143,20156,Phoenix/Tokelau/Northern Cook Islands,39,Central Polynesia,7,Eastern Indo-Pacific,151,156,Tropical,8774370.86616596,2548700056945.4
+144,20216,Prince Edward Islands,59,Subantarctic Islands,12,Southern Ocean,226,216,Polar,3057051.93637495,699975625007.33
+145,25056,Puget Trough/Georgia Basin,10,Cold Temperate Northeast Pacific,3,Temperate Northern Pacific,55,56,Temperate,2881053.38407553,478119391133.693
+146,20159,Rapa-Pitcairn,40,Southeast Polynesia,7,Eastern Indo-Pacific,153,159,Tropical,6357019.85352555,1462876535761.62
+147,20164,Revillagigedos,43,Tropical East Pacific,8,Tropical Eastern Pacific,170,164,Tropical,3295425.61002341,713053068723.314
+148,20182,Rio de la Plata,47,Warm Temperate Southwestern Atlantic,9,Temperate South America,181,182,Temperate,2864582.96857489,605482272510.822
+149,20181,Rio Grande,47,Warm Temperate Southwestern Atlantic,9,Temperate South America,182,181,Temperate,3233732.35628034,685626851237.079
+150,20229,Ross Sea,61,Continental High Antarctic,12,Southern Ocean,213,229,Polar,87352123.8466525,111834200876647
+151,20028,Saharan Upwelling,3,Lusitanian,2,Temperate Northern Atlantic,38,28,Temperate,6340488.09377439,1522571214085.11
+152,20157,Samoa Islands,39,Central Polynesia,7,Eastern Indo-Pacific,152,157,Tropical,3913163.7397344,815742394860.958
+153,20073,Sao Pedro and Sao Paulo Islands,14,Tropical Southwestern Atlantic,4,Tropical Atlantic,62,73,Tropical,2307426.66764662,407405410719.404
+154,20039,Scotian Shelf,5,Cold Temperate Northwest Atlantic,2,Temperate Northern Atlantic,24,39,Temperate,3094855.56988927,528016623723.54
+155,20049,Sea of Japan/East Sea,8,Cold Temperate Northwest Pacific,3,Temperate Northern Pacific,47,49,Temperate,8400960.1889881,3858858983302.5
+156,20045,Sea of Okhotsk,8,Cold Temperate Northwest Pacific,3,Temperate Northern Pacific,48,45,Temperate,17308641.1412867,9696028291822.93
+157,20096,Seychelles,20,Western Indian Ocean,5,Western Indo-Pacific,86,96,Tropical,5484553.0724844,1203665561685.21
+158,20210,Shark Bay,58,West Central Australian Shelf,11,Temperate Australasia,193,210,Temperate,2606748.27022934,411769526655.817
+159,20201,Snares Island,54,Southern New Zealand,11,Temperate Australasia,207,201,Temperate,2189373.64687654,242748129755.225
+160,20161,Society Islands,40,Southeast Polynesia,7,Eastern Indo-Pacific,154,161,Tropical,2832310.31076975,530783012433.74
+161,20135,Solomon Archipelago,31,Eastern Coral Triangle,6,Central Indo-Pacific,129,135,Tropical,6221436.02403206,1730060181724.14
+162,20136,Solomon Sea,31,Eastern Coral Triangle,6,Central Indo-Pacific,130,136,Tropical,4144011.97006604,768406645064.159
+163,20207,South Australian Gulfs,57,Southwest Australian Shelf,11,Temperate Australasia,196,207,Temperate,3341949.6584299,705245016472.687
+164,20114,South China Sea Oceanic Islands,25,South China Sea,6,Central Indo-Pacific,117,114,Tropical,4920401.12327142,1349949740885.25
+165,20027,South European Atlantic Shelf,3,Lusitanian,2,Temperate Northern Atlantic,40,27,Temperate,6238460.69731932,2131617852506.5
+166,20220,South Georgia,60,Scotia Sea,12,Southern Ocean,216,220,Polar,4034362.84786937,1203941280885.57
+167,20104,South India and Sri Lanka,21,West and South Indian Shelf,5,Western Indo-Pacific,99,104,Tropical,3459995.62511094,817059842820.115
+168,20121,South Kuroshio,28,South Kuroshio,6,Central Indo-Pacific,119,121,Tropical,5306979.26537756,1217675692089.64
+169,20221,South Orkney Islands,60,Scotia Sea,12,Southern Ocean,217,221,Polar,4060925.00891809,1163453270722.05
+170,20219,South Sandwich Islands,60,Scotia Sea,12,Southern Ocean,218,219,Polar,4897930.41527616,1451222125216.77
+171,20222,South Shetland Islands,60,Scotia Sea,12,Southern Ocean,219,222,Polar,5432893.82651722,1556309733008.22
+172,20099,Southeast Madagascar,20,Western Indian Ocean,5,Western Indo-Pacific,87,99,Tropical,3632350.59206453,750125919894.924
+173,20137,Southeast Papua New Guinea,31,Eastern Coral Triangle,6,Central Indo-Pacific,131,137,Tropical,2216588.14323728,272674655139.536
+174,20180,Southeastern Brazil,47,Warm Temperate Southwestern Atlantic,9,Temperate South America,183,180,Temperate,4150283.28304501,989070419920.028
+175,25059,Southern California Bight,11,Warm Temperate Northeast Pacific,3,Temperate Northern Pacific,58,59,Temperate,4584859.14068858,926082666145.348
+176,20066,Southern Caribbean,12,Tropical Northwestern Atlantic,4,Tropical Atlantic,71,66,Tropical,5474009.17620123,1146272122456.11
+177,20113,Southern China,25,South China Sea,6,Central Indo-Pacific,118,113,Tropical,4139008.25643148,878319259617.709
+178,20038,Southern Grand Banks - South Newfoundland,5,Cold Temperate Northwest Atlantic,2,Temperate Northern Atlantic,25,38,Temperate,5751649.85837569,783717951624.249
+179,20069,Southern Gulf of Mexico,12,Tropical Northwestern Atlantic,4,Tropical Atlantic,72,69,Tropical,5318465.1523424,1356738152852.29
+180,20200,South New Zealand,54,Southern New Zealand,11,Temperate Australasia,208,200,Temperate,3742703.02580996,661810885310.242
+181,20088,Southern Red Sea,18,Red Sea and Gulf of Aden,5,Western Indo-Pacific,98,88,Tropical,4067703.2904213,1018924807739.01
+182,20116,Southern Vietnam,26,Sunda Shelf,6,Central Indo-Pacific,114,116,Tropical,2548659.24669245,361339281470.222
+183,20067,Southwestern Caribbean,12,Tropical Northwestern Atlantic,4,Tropical Atlantic,73,67,Tropical,4571427.57207761,1219047701404.02
+184,20078,St. Helena and Ascension Islands,15,St. Helena and Ascension Islands,4,Tropical Atlantic,82,78,Tropical,4791534.274994,908079984612.102
+185,20128,Sulawesi Sea/Makassar Strait,30,Western Coral Triangle,6,Central Indo-Pacific,127,128,Tropical,5543751.8763823,930642015434.08
+186,20095,East African Coral Coast,20,Western Indian Ocean,5,Western Indo-Pacific,88,95,Tropical,4467617.73691779,1101080178033.89
+187,20094,Northern Monsoon Current Coast,20,Western Indian Ocean,5,Western Indo-Pacific,89,94,Tropical,3266042.62892063,598685373291.281
+188,20101,Bight of Sofala/Swamp Coast,20,Western Indian Ocean,5,Western Indo-Pacific,90,101,Tropical,3367453.99376202,726671080480.309
+189,20197,Three Kings-North Cape,53,Northern New Zealand,11,Temperate Australasia,204,197,Temperate,2356464.91313037,339745902769.198
+190,20146,Tonga Islands,35,Tropical Southwestern Pacific,6,Central Indo-Pacific,146,146,Tropical,3801428.85894222,874469569411.467
+191,20077,Trindade and Martin Vaz Islands,14,Tropical Southwestern Atlantic,4,Tropical Atlantic,63,77,Tropical,2516996.16160245,499640505332.225
+192,20189,Tristan Gough,49,Tristan Gough,9,Temperate South America,185,189,Temperate,5592593.76424695,1640443952255.32
+193,20162,Marquesas,41,Marquesas,7,Eastern Indo-Pacific,157,162,Tropical,3172409.06099959,764409109423.695
+194,20202,Tweed-Moreton,55,East Central Australian Shelf,11,Temperate Australasia,201,202,Temperate,3023651.87722174,573415487833.63
+195,20183,Uruguay-Buenos Aires Shelf,47,Warm Temperate Southwestern Atlantic,9,Temperate South America,184,183,Temperate,5196908.1041971,1028264522995.15
+196,20148,Vanuatu,35,Tropical Southwestern Pacific,6,Central Indo-Pacific,147,148,Tropical,6206083.51621886,1657398751243.3
+197,20041,Virginian,5,Cold Temperate Northwest Atlantic,2,Temperate Northern Atlantic,26,41,Temperate,4599741.92842555,1270963439995.77
+198,20125,West Caroline Islands,29,Tropical Northwestern Pacific,6,Central Indo-Pacific,142,125,Tropical,4176502.78169989,1014988179975.02
+199,20227,Weddell Sea,61,Continental High Antarctic,12,Southern Ocean,214,227,Polar,46242049.5009094,56786313773298.3
+200,20004,West Greenland Shelf,1,Arctic,1,Arctic,9,4,Polar,16092433.0294874,8665316439427.88
+201,20100,Western and Northern Madagascar,20,Western Indian Ocean,5,Western Indo-Pacific,91,100,Tropical,6869680.29343746,1727952670403.31
+202,20092,Western Arabian Sea,19,Somali/Arabian,5,Western Indo-Pacific,95,92,Tropical,4367711.03089001,1073025015707.04
+203,20206,Western Bassian,56,Southeast Australian Shelf,11,Temperate Australasia,199,206,Temperate,3927965.24501158,791152459265.437
+204,20068,Western Caribbean,12,Tropical Northwestern Atlantic,4,Tropical Atlantic,74,68,Tropical,2952895.6635241,442929984284.722
+205,20174,Western Galapagos Islands,44,Galapagos,8,Tropical Eastern Pacific,162,174,Tropical,2085324.42508508,235260164666.495
+206,20103,Western India,21,West and South Indian Shelf,5,Western Indo-Pacific,100,103,Tropical,6494480.3896061,1978702763225.57
+207,20050,Yellow Sea,8,Cold Temperate Northwest Pacific,3,Temperate Northern Pacific,49,50,Temperate,5733855.71776426,2195889424879.98
+208,20119,Southern Java,27,Java Transitional,6,Central Indo-Pacific,109,119,Tropical,4803811.64941207,745987108951.228
+209,20111,Western Sumatra,24,Andaman,5,Western Indo-Pacific,107,111,Tropical,4267461.93989543,906799978509.085
+210,20142,Torres Strait Northern Great Barrier Reef,33,Northeast Australian Shelf,6,Central Indo-Pacific,137,142,Tropical,2902203.0904881,272433551359.172
+211,20143,Central and Southern Great Barrier Reef,33,Northeast Australian Shelf,6,Central Indo-Pacific,136,143,Tropical,4111386.55196323,759907417567.003
+212,20117,Sunda Shelf/Java Sea,26,Sunda Shelf,6,Central Indo-Pacific,115,117,Tropical,6399841.32299734,2013491578698.15
+213,20002,North and East Iceland,1,Arctic,1,Arctic,10,2,Polar,11400004.5170719,3184277611570.3
+214,20020,South and West Iceland,2,Northern European Seas,2,Temperate Northern Atlantic,27,20,Temperate,6261945.31081089,2311107886034.29
+215,20025,North Sea,2,Northern European Seas,2,Temperate Northern Atlantic,32,25,Temperate,11487624.9059177,4644066399608.88
+216,20022,Southern Norway,2,Northern European Seas,2,Temperate Northern Atlantic,33,22,Temperate,6842116.60747257,2181533529409.18
+217,20023,Northern Norway and Finnmark,2,Northern European Seas,2,Temperate Northern Atlantic,28,23,Temperate,10338103.4063565,4699066250909.37
+218,20018,North and East Barents Sea,1,Arctic,1,Arctic,11,18,Polar,41629640.9605163,47767015946491.8
+219,20019,White Sea,1,Arctic,1,Arctic,12,19,Polar,6239573.90270694,2227529625563.5
+220,20065,Greater Antilles,12,Tropical Northwestern Atlantic,4,Tropical Atlantic,70,65,Tropical,5905302.10906096,1443107525263.76
+221,20160,Southern Cook/Austral Islands,40,Southeast Polynesia,7,Eastern Indo-Pacific,155,160,Tropical,6413864.71166567,1959272680172.25
+222,25085,Gulf of Guinea South,17,Gulf of Guinea,4,Tropical Atlantic,186,85,Tropical,2972338.99866196,528706245282.186
+223,25086,Angolan,17,Gulf of Guinea,4,Tropical Atlantic,186,86,Temperate,3713763.94100882,847974659005.363
+224,25080,Sahelian Upwelling,16,West African Transition,4,Tropical Atlantic,76,80,Tropical,3685262.87701548,782278736071.694
+225,20030,Adriatic Sea,4,Mediterranean Sea,2,Temperate Northern Atlantic,0,30,Temperate,3355671.60508679,672777690051.928
+226,25032,Levantine Sea,4,Mediterranean Sea,2,Temperate Northern Atlantic,0,32,Temperate,6076809.2901376,1617391517710.95
+227,25033,Tunisian Plateau/Gulf of Sidra,4,Mediterranean Sea,2,Temperate Northern Atlantic,0,33,Temperate,5048862.3380082,1501237001820.21
+228,25034,Ionian Sea,4,Mediterranean Sea,2,Temperate Northern Atlantic,0,34,Temperate,4053359.9982419,721485038346.511
+229,25031,Aegean Sea,4,Mediterranean Sea,2,Temperate Northern Atlantic,0,31,Temperate,4163623.13712477,991464333563.381
+230,25036,Alboran Sea,4,Mediterranean Sea,2,Temperate Northern Atlantic,0,36,Temperate,2890294.32703696,529079788278.366
+231,25035,Western Mediterranean,4,Mediterranean Sea,2,Temperate Northern Atlantic,0,35,Temperate,6265575.82792775,2328925728726.99
+232,25010,High Arctic Archipelago,1,Arctic,1,Arctic,2,10,Polar,32138898.5518179,38867471800627.5
