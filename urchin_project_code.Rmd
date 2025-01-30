@@ -29,6 +29,11 @@ library(DHARMa)
 library(metafor) # for metaanalysis
 library(stringr)
 library(here)
+library(tidyverse) # data manipulation
+library(patchwork) # combining figures
+library(sf) # working with georeferenced objects
+library(rnaturalearth) # map of the world
+library(rnaturalearthdata)
 opts_chunk$set(comment="  ",
                collapse=TRUE, 
                echo=FALSE,
@@ -81,7 +86,138 @@ my_theme <-     theme_classic() +
         legend.box.background = element_rect(colour = "black"))  # add box around legend
 ```
 
-```{r read in data}
+```{r lit timeline}
+## ADAPTED FROM CODE FROM J. RENZI
+
+lit <- read.csv(here::here("data", "paper_list.csv"))
+
+# get the count of publications per year
+time_sum <- lit %>% 
+  group_by(year, focus) %>% 
+  summarize(study = n()) 
+
+# get the duration of the graph we want (from the first study to the last)
+min_yr <- 1967
+max_yr <- 2024
+
+# create a dataframe of all possible values to join so that every year is accounted for (year=0 if there are no publications)
+all_years <- data.frame(year = c(seq(min_yr, max_yr, by = 1),
+                                seq(min_yr, max_yr, by = 1),
+                                seq(min_yr, max_yr, by = 1)),
+                        focus = c(rep("erosion", times = max_yr-min_yr+1),
+                                     rep("herbivory", times = max_yr-min_yr+1),
+                                     rep("both", times = max_yr-min_yr+1))) 
+
+# join the dataframes so there's a line for every year
+time_full <- all_years %>% 
+  full_join(time_sum, by = c("year", "focus")) %>% # join the two dataframes so there's a line for every year
+  mutate(study = replace_na(study, 0)) # replace the NA's for 0 in the years where nothing was published
+
+(time_plt <-
+  ggplot(data = time_full, aes(x = year, y = study, fill = fct_reorder(focus, desc(focus)))) + # fct_reorder() so both is the last in the legend (makes the most sense)
+  geom_bar(stat = "identity") + # identity means to use the values in the cells for plotting
+  ylab("Number of studies") +
+  geom_hline(yintercept = 0) + # create an x-axis that is distinct
+  theme_minimal()  +
+  scale_fill_manual(name = "", # no legend title 
+                    limits = c("erosion", "herbivory", "both"),
+                    values = c("darkgoldenrod1",   "brown3", "darkorange4"),
+                    labels = c("herbivory" = "Herbivory", "erosion" = "Erosion", "both" = "both")) +
+  scale_x_continuous(breaks = seq(min_yr, max_yr, by = 2)) + # get higher resolution ticks on the x-axis
+  labs(title = "a.") +
+  theme(text = element_text(size = 15), legend.position = "top",
+        axis.text.x = element_text(angle = 90, hjust = 1), # rotate axis labels
+        axis.title.x = element_text(vjust = -1), # add padding fo titles (also need to adjust the margins)
+        axis.title.y = element_text(vjust = 3),
+        plot.margin = unit(c(5.5, 5.5, 10, 10), "points")) )
+
+```
+
+```{r map}
+# bring in world shape
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+# bring in shapefiles from Spalding et al. on marine bioregions
+meow_ecos <- read_sf(here::here("data", "Marine_Ecoregions_Of_the_World_(MEOW)-shp"))
+
+# check that projections match
+# st_crs(world)
+# st_crs(meow_ecos) # both WGS84 but specified differently... 
+# coerce coordinate systems
+world <- st_transform(world, crs = 4326)
+
+lit_expanded <- lit %>%
+  separate_rows(ecoregion, sep = ";") %>%  # Split multiple ecoregions into separate rows
+  mutate(Ecoregion = trimws(ecoregion))   # Remove any leading/trailing whitespace
+
+
+
+# get count of number of studies per ecoregion
+ecoreg_sum <- lit_expanded %>% 
+  group_by(ecoregion) %>% 
+  summarize(num_studies = n()) %>% 
+  mutate(ECOREGION = ecoregion) # make name match that in meow_ecos
+
+meow_pub <- meow_ecos %>% 
+  left_join(ecoreg_sum, by = "ECOREGION")
+
+# coerce to match coordinate system of world
+meow_pub <- st_transform(meow_pub, crs = 4326)
+
+(ecoreg_plt <- ggplot() +
+  # color the ecoregions based on the number of studies they have
+  geom_sf(data = meow_pub, aes(fill = num_studies), color = NA, linewidth = 0) +
+  geom_sf(data = world, fill = "black", color = "black", size = 0.05) + # background color for continents (black)
+  theme_bw() +
+  # format legend and color scheme
+  scale_fill_gradient(name = "Number of studies", 
+                      low = "yellow", 
+                      high = "brown3", 
+                      na.value = NA) +
+  labs(title = "b.") +
+  theme(text = element_text(size = 15)) + # increase text size
+  coord_sf(xlim = c(-180, 180), ylim = c(-90, 90), expand = FALSE) +
+  theme(panel.grid.major = element_line(colour = 'grey50', size = 0.2, linetype = 3))) # add grid lines 
+```
+
+```{r lit review panel, fig.height=8, fig.width = 10}
+(lit_panel <- ggpubr::ggarrange(time_plt, ecoreg_plt, nrow = 2, ncol = 1))
+# ggsave(filename = "output/lit_review_summary_panel_v1.png", lit_panel, height = 8, width = 10)
+```
+
+```{r repeat map with just erosion}
+erosion_lit <- subset(lit_expanded, focus != "herbivory")
+
+
+
+# get count of number of studies per ecoregion
+erosion_ecoreg_sum <- erosion_lit %>% 
+  group_by(ecoregion) %>% 
+  summarize(num_studies = n()) %>% 
+  mutate(ECOREGION = ecoregion) # make name match that in meow_ecos
+
+meow_erosion_pub <- meow_ecos %>% 
+  left_join(erosion_ecoreg_sum, by = "ECOREGION")
+
+# coerce to match coordinate system of world
+meow_erosion_pub <- st_transform(meow_erosion_pub, crs = 4326)
+
+(ecoreg_erosion_plt <- ggplot() +
+  # color the ecoregions based on the number of studies they have
+  geom_sf(data = meow_erosion_pub, aes(fill = num_studies), color = NA, linewidth = 0) +
+  geom_sf(data = world, fill = "black", color = "black", size = 0.05) + # background color for continents (black)
+  theme_bw() +
+  # format legend and color scheme using RColorBrewer
+  scale_fill_gradient(name = "Number of studies", 
+                      low = "yellow", 
+                      high = "red", 
+                      na.value = NA) +
+  theme(text = element_text(size = 15)) + # increase text size
+  coord_sf(xlim = c(-180, 180), ylim = c(-90, 90), expand = FALSE) +
+  theme(panel.grid.major = element_line(colour = 'grey50', size = 0.2, linetype = 3))) # add grid lines 
+```
+
+```{r prep urchin field data}
 
 # read in data
 comb <- read.csv(here::here("data", "urchin_data.csv"), stringsAsFactors = T)
@@ -93,6 +229,7 @@ comb$Size <- as.numeric(comb$Size) # coerce size into as numeric
 comb$SL <- comb$aL + comb$bL * comb$Size # convert TL to SL for biomass conversions
 comb$biomass.ind <- comb$a * comb$SL^comb$b # biomass = aL^b
 comb$Rugosity <- 10/comb$Rugosity # convert rugosity to rugosity index over 10m
+comb$Depth_m <- comb$Depth/3.281
 
 # Only interested in urchins (community of interest), herbivorous fish (competitors), urchin predators
 relevant_data <- subset(comb, Diet == "Herbivore" | Diet == "Urchin" | Diet == "Urchin predator") 
@@ -180,13 +317,19 @@ benthic_trans[cover_columns] <- lapply(benthic_trans[cover_columns], function(x)
 
 ```{r count analyses set up}
 # aggregate counts to get total number of ind for each species per transect
-comb_count <- ddply(relevant_data, c("Site","Site.ID", "Protection.status", "Substrate", "Guild", "Species.code", "Species.name", "Transect.number", "Transect.area", "Depth", "Rugosity", "Diet"), numcolwise(sum))
+comb_count <- ddply(relevant_data, c("Site","Site.ID", "Protection.status", "Substrate", "Guild", "Species.code", "Species.name", "Transect.number", "Transect.area", "Depth", "Depth_m", "Rugosity", "Diet"), numcolwise(sum))
+
+
 
 # calculate density for fish and urchins (different size transects) then recombine
 fish <- subset(comb_count, Diet != 'Urchin')
 fish$Density <- fish$Count/fish$Transect.area # density = count / area (fish were on a 25 x 5 m transect)
 urchins <- subset(comb_count, Diet == 'Urchin')
 urchins$Density <- urchins$Count/urchins$Transect.area # urchins were on a 25 x 2 m transect
+
+# for summary stats in paper
+count_summaries <- ddply(urchins, c("Guild"), numcolwise(sum))
+
 comb_count <- rbind(fish, urchins) # recombine them
 
 # create wide table at functional group level
@@ -209,8 +352,8 @@ urchin_density_multi <- cast(urchins, Site + Site.ID + Protection.status + Subst
 
 
 urchin_density_master <- merge(urchin_density_multi, simplified_benthic)
-urchin_density_master$Herbivorous_fish <- urchin_guild_master$Herbivorous_fish
-urchin_density_master$Urchin_predator <- urchin_guild_master$`Urchin predator`
+urchin_density_master$Herbivorous_fish <- guild_count_multi$Herbivorous_fish
+urchin_density_master$Urchin_predator <- guild_count_multi$`Urchin predator`
 
 # for guild density
 urchin_guild_master <- merge(guild_density_multi, simplified_benthic) 
@@ -334,12 +477,15 @@ boring_dens_sig <- c("*", "**", "*", "***")
 ```{r protection density boxplots, fig.height= 5, fig.width = 8}
 (grazing_density_plot <-
    ggplot() +
-   geom_boxplot(data = urchin_guild_master, aes(x = Site, y = grazing_urchin, fill = Protection.status)) +
+   geom_boxplot(data = urchin_guild_master, aes(x = Site, y = grazing_urchin, fill = Protection.status),
+                outlier.shape = NA) +
+   geom_point(data = urchin_guild_master, aes(x = Site, y = grazing_urchin,  fill = Protection.status),
+              position = position_jitterdodge(dodge.width = 0.9, jitter.width = 0.3)) +
    geom_text(aes(x = c(1, 2, 3, 4), y = rep(45, 4), label = grazing_dens_sig), size = 15) + # add sig stars
    scale_y_break(c(50, 200), space = 0.5) +
     scale_fill_manual(values = c("Protected" = "grey",
                       "Unprotected" = "white")) +
-    labs(title = "a. Grazing urchin density", fill = "Protection status", y = bquote('Density (per 50('*m^2*') transect)') ) +
+    labs(title = "a. Grazing urchin density", fill = "Protection status", y = bquote('Density (per 50'*m^2*' transect)') ) +
    my_theme
   )
    
@@ -347,10 +493,12 @@ boring_dens_sig <- c("*", "**", "*", "***")
 (boring_density_plot <-
    ggplot() +
     geom_boxplot(data = urchin_guild_master, aes(x = Site, y = boring_urchin, fill = Protection.status)) +
+    geom_point(data = urchin_guild_master, aes(x = Site, y = boring_urchin,  fill = Protection.status),
+           position = position_jitterdodge(dodge.width = 0.9, jitter.width = 0.3)) +
     geom_text(aes(x = c(1, 2, 3, 4), y = rep(600, 4), label = boring_dens_sig), size = 15) +
     scale_fill_manual(values = c("Protected" = "grey",
                       "Unprotected" = "white")) +
-    labs(title = "e. Boring urchin density", fill = "Protection status", y = bquote('Density (per 50('*m^2*') transect)') ) +
+    labs(title = "e. Boring urchin density", fill = "Protection status", y = bquote('Density (per 50'*m^2*' transect)') ) +
     my_theme
 
   )
@@ -602,8 +750,8 @@ comb_pred_data <- comb_pred_data %>%
                       "Boring" = "coral")) +
    scale_fill_manual(values = c("Grazing" = "skyblue",
                       "Boring" = "coral") ) +
-   labs(title = "g. Herbivore density", fill = "Urchin guild", colour = "Urchin guild", y = "",
-        x = bquote('Herbivore density (Fish '*m^-2*')')) +
+   labs(title = "h. Herbivore density", fill = "Urchin guild", colour = "Urchin guild", y = "",
+        x = bquote('Herbivore biomass (g '*m^-2*')')) +
    
    my_theme 
  )
@@ -621,7 +769,7 @@ comb_pred_data <- comb_pred_data %>%
    scale_fill_manual(values = c("Grazing" = "skyblue",
                       "Boring" = "coral") ) +
    labs(title = "i. Predator density", fill = "Urchin guild", colour = "Urchin guild", y = "",
-        x = bquote('Predator density (Fish '*m^-2*')')) +
+        x = bquote('Predator biomass (g '*m^-2*')')) +
    
    my_theme 
  )
@@ -637,7 +785,7 @@ comb_pred_data <- comb_pred_data %>%
 
 ```{r combined density panel, fig.height=10, fig.width= 34}
 (full_density_panel <- ggarrange(protection_density_panel, remaining_density_panel, widths = c(0.235, 0.765)))
-# ggsave(filename = "output/density_panel_graph_v1.png", full_density_panel, height = 10, width = 34)
+# ggsave(filename = "output/density_panel_graph_v3.png", full_density_panel, height = 10, width = 34)
 ```
 
 ```{r urchin nmds}
@@ -686,13 +834,7 @@ cDens.species.scores <- as.data.frame(scores(ord2, "species"))  #Using the score
 cDens.species.scores$species <- rownames(cDens.species.scores)  # create a column of species, from the rownames of species.scores
 
 
-df_ell.cDens.Stratum <- data.frame() #sets up a data frame before running the function.
-for(g in levels(cDens.site.scores$Stratum)){
-   df_ell.cDens.Stratum <-
-     rbind(df_ell.cDens.Stratum, cbind(as.data.frame(with(cDens.site.scores[cDens.site.scores$Stratum==g,],
-                                                                      veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
-                                       ,Stratum=g))
- }
+
 
 
 fit <- envfit(ord2 ~ Coral + Simple_turf + CCA + Macroalgae + Depth + Herbivorous_fish + Urchin_predator,
@@ -758,7 +900,7 @@ vegan::adonis2(urchin_density_m ~ Site*Protection.status + Coral + Simple_turf +
          shape=guide_legend(title.position="top",  # make shape legend title go above legend
                                      title.hjust =0.5,
                             nrow = 2),
-         path = guide_legend(title.position="top",  # make shape legend title go above legend
+         linetype = guide_legend(title.position="top",  # make shape legend title go above legend
                                      title.hjust =0.5)
          ) +
   scale_shape_manual(values = c(16, 1) )  + 
@@ -781,6 +923,8 @@ vegan::adonis2(urchin_density_m ~ Site*Protection.status + Coral + Simple_turf +
 # read in data from each paper for meta-analysis
 bak_ECMA <- read.csv(here::here("erosion", "Bak_1990_ECMA.csv") )
 
+mcmu_ECMA <- read.csv(here::here("erosion", "MCMU_1988_ECMA.csv"))
+
 csmc_ECMA <- read.csv(here::here("erosion", "CSMC_2001_ECMA.csv"))
 
 russo_ECMA <- read.csv(here::here("erosion", "Russo_1980_ECMA.csv"))
@@ -802,8 +946,20 @@ AICc(bak_ECMA_mod_exp, bak_ECMA_mod_power) # power better
 summary(bak_ECMA_mod_power) # similar to McClanahan re-fit
 bak_ECMA_param <- summary(bak_ECMA_mod_power)$parameters
 
+# McClanahan and Muthiga 1988 fit
+# y = 0.27 + 0.012*(biomass)
+# McClanahan 1988 biomass fit:
+# y =  0.002(Diameter_mm)^2.64
+mcmu_ECMA_mod_power <- nls(ErosionRate_gPerDay ~ a*Diameter_mm^b, data = mcmu_ECMA, start = list(a = 0.002, b = 2.6))
+summary(mcmu_ECMA_mod_power) # parameters from fitting model using nls very different from paper
 
-# CS and McC 2002 fit:
+mcmu_ECMA_exp <- nls(ErosionRate_gPerDay ~ a * exp(b*Diameter_mm), data = mcmu_ECMA, start = list(a = 0.01, b = 0.04)) # try fitting to exponential
+AICc(mcmu_ECMA_mod_power, mcmu_ECMA_exp) # power function still a better fit than exponential model
+
+mcmu_ECMA_param <- summary(mcmu_ECMA_mod_power)$parameters
+
+
+# CS and McC 2001 fit:
 # y = 0.015*(biomass)
 # McClanahan 1988 biomass fit:
 # y =  0.002(Diameter_mm)^2.64
@@ -860,13 +1016,13 @@ AICc(lm(conand_ECMA$ErosionRate_gPerDay ~ I(conand_ECMA_param[1,1]*conand_ECMA$D
 
 
 ECMA_data <- data.frame(
-  Study = c("bak_ECMA", "conand_ECMA", "csmc_ECMA", "russo_ECMA"),
-  Model = c("Power", "Power", "Power", "Power"),  # Specify the model type
-  Parameter_a = c(bak_ECMA_param[1, 1], conand_ECMA_param[1, 1], csmc_ECMA_param[1, 1], russo_ECMA_param[1,1]),  # Extract 'a' parameter
-  Parameter_b = c(bak_ECMA_param[2, 1], conand_ECMA_param[2, 1], csmc_ECMA_param[2, 1], russo_ECMA_param[2,1]),  # Extract 'b' parameter
-  SE_Parameter_a = c(bak_ECMA_param[1, 2], conand_ECMA_param[1, 2], csmc_ECMA_param[1, 2], russo_ECMA_param[1,2]),  # Extract SE for 'a'
-  SE_Parameter_b = c(bak_ECMA_param[2, 2], conand_ECMA_param[2,2], csmc_ECMA_param[2,2], russo_ECMA_param[2,2]),  # Extract SE for 'b'
-  Location = c("Moorea", "Reunion", "Kenya", "Enewetak")
+  Study = c("bak_ECMA", "conand_ECMA", "mcmu_ECMA", "csmc_ECMA", "russo_ECMA"),
+  Model = c("Power", "Power", "Power", "Power", "Power"),  # Specify the model type
+  Parameter_a = c(bak_ECMA_param[1, 1], conand_ECMA_param[1, 1], mcmu_ECMA_param[1, 1], csmc_ECMA_param[1, 1], russo_ECMA_param[1,1]),  # Extract 'a' parameter
+  Parameter_b = c(bak_ECMA_param[2, 1], conand_ECMA_param[2, 1], mcmu_ECMA_param[2, 1],  csmc_ECMA_param[2, 1], russo_ECMA_param[2,1]),  # Extract 'b' parameter
+  SE_Parameter_a = c(bak_ECMA_param[1, 2], conand_ECMA_param[1, 2], mcmu_ECMA_param[1, 2],  csmc_ECMA_param[1, 2], russo_ECMA_param[1,2]),  # Extract SE for 'a'
+  SE_Parameter_b = c(bak_ECMA_param[2, 2], conand_ECMA_param[2,2], mcmu_ECMA_param[2, 2], csmc_ECMA_param[2,2], russo_ECMA_param[2,2]),  # Extract SE for 'b'
+  Location = c("Moorea", "Reunion", "Kenya",  "Kenya", "Enewetak")
 )
 
 # run meta-analysis for b parameter
@@ -897,7 +1053,7 @@ ECMA$bE_sd <- rep(ECMA_sd_combined_effect_size_b, nrow(ECMA)) # do the same for 
 #### DISA ----
 bak_DISA <- read.csv(here::here("erosion", "Bak_1990_DISA.csv"))
 
-csmc_DISA <- read.csv(here::here("erosion", "CSMC_2002_DISA.csv"))
+csmc_DISA <- read.csv(here::here("erosion", "CSMC_2001_DISA.csv"))
 
 # Bak 1990
 # No relationship fitted in paper - midpoint size class used
@@ -1089,7 +1245,7 @@ DIPA$bE_sd <- rep(DISA_sd_combined_effect_size_b, nrow(DIPA)) # do the same for 
 # not including TRGR, HEMA, or EUMA because of no available estimates of bioerosion from conspecifics
 # they all had relatively low abundance and TRGR & HEMA have low hypothesized rates of erosion
 urchin_update <- rbind(ECMA, DIPA, DISA, ECAC, ECCA, ECDI, ECOB)
-urchin_update$Bioerosion <- urchin_erosion$aE*urchin_erosion$biomass.ind^urchin_erosion$bE
+urchin_update$Bioerosion <- urchin_update$aE*urchin_update$biomass.ind^urchin_update$bE
 
 # condense by transect
 urchin_erosion <- ddply(urchin_update,
@@ -1113,27 +1269,41 @@ summary(erosion_mod)
 #                   Estimate Std. Error z value Pr(>|z|)    
 # (Intercept)     -2.512e+00  6.003e-01  -4.185 2.85e-05 ***
 # SiteKaneohe      3.749e+00  7.097e-01   5.282 1.28e-07 ***
-# SiteNorth Shore  8.964e-06  8.490e-01   0.000    1.000    
-# SiteWaikiki     -1.759e+01  4.236e+03  -0.004    0.997  
-
+# SiteNorth Shore  1.157e-05  8.490e-01   0.000    1.000    
+# SiteWaikiki     -1.714e+01  3.377e+03  -0.005    0.996   
 Anova(erosion_mod)
 #                          Chisq Df Pr(>Chisq)    
-# Protection.status       1.4578  1    0.22728    
-# Site                   68.6388  3  8.350e-15 ***
-# Coral                   6.4522  1    0.01108 *  
-# Simple_turf             3.9483  1    0.04692 *  
-# Macroalgae              0.4076  1    0.52319    
-# CCA                     1.2344  1    0.26656    
-# Depth_m                 2.1934  1    0.13860    
-# Herbivorous_fish        1.3501  1    0.24527    
-# Urchin_predator         0.7276  1    0.39367    
-# Protection.status:Site 25.0920  3  1.477e-05 ***
+# Protection.status       0.3459  1    0.55642    
+# Site                   70.7104  3  3.007e-15 ***
+# Coral                   5.0901  1    0.02406 *  
+# Simple_turf             3.4042  1    0.06503 .  
+# Macroalgae              0.4670  1    0.49437    
+# CCA                     1.9014  1    0.16792    
+# Depth_m                 2.5845  1    0.10791    
+# Herbivorous_fish        1.0409  1    0.30762    
+# Urchin_predator         0.7859  1    0.37534    
+# Protection.status:Site 26.9048  3  6.164e-06 ***
 
 ```
 
 ```{r erosion plot setup}
 # Protection and site
 emmeans(erosion_mod, pairwise ~ Protection.status | Site)
+# Site = Hanauma:
+#  contrast                estimate    SE  df z.ratio p.value
+#  Protected - Unprotected    1.102 0.739 Inf   1.492  0.1357
+# 
+# Site = Kaneohe:
+#  contrast                estimate    SE  df z.ratio p.value
+#  Protected - Unprotected   -3.403 1.478 Inf  -2.303  0.0213
+# 
+# Site = North Shore:
+#  contrast                estimate    SE  df z.ratio p.value
+#  Protected - Unprotected    0.675 0.549 Inf   1.230  0.2188
+# 
+# Site = Waikiki:
+#  contrast                estimate    SE  df z.ratio p.value
+#  Protected - Unprotected   -2.992 0.699 Inf  -4.279  <.0001
 erosion_protection_symb <- c("", "*", "", "***")
 
 ### turf
@@ -1229,7 +1399,7 @@ erosion_pred_data <- erosion_pred_data %>%
     scale_fill_manual(values = c("Protected" = "grey",
                       "Unprotected" = "white")) +
     scale_y_continuous(limits = c(0, 6200)) +
-    labs(title = "a. Site", fill = "Protection status", y = bquote('Erosion rate (mg ('*day^-1*')'), x = "" ) +
+    labs(title = "a. Site", fill = "Protection status", y = bquote('Erosion rate (mg '*day^-1*')'), x = "" ) +
    my_theme
   )
 
@@ -1238,7 +1408,7 @@ erosion_pred_data <- erosion_pred_data %>%
    geom_point(data = urchin_erosion_master, aes(x = Simple_turf, y = Bioerosion)) +
    geom_line(data = erosion_turf_data, aes(x = Simple_turf, y = Bioerosion), size = 1.5) +
    geom_ribbon(data = erosion_turf_data, aes(x = Simple_turf, ymin = lower.CI, ymax = upper.CI), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 5000, label = "P = 0.046"), hjust = 0, size = 8) +
+   geom_text(aes(x = 0, y = 5000, label = "P = 0.07"), hjust = 0, size = 8) +
    labs(title = "b. Turf", y = "",
         x = "Turf cover") +
    my_theme 
@@ -1249,7 +1419,7 @@ erosion_pred_data <- erosion_pred_data %>%
    geom_point(data = urchin_erosion_master, aes(x = Coral, y = Bioerosion)) +
    geom_line(data = erosion_coral_data, aes(x = Coral, y = Bioerosion), size = 1.5) +
    geom_ribbon(data = erosion_coral_data, aes(x = Coral, ymin = lower.CI, ymax = upper.CI), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 25000, label = "P = 0.011"), hjust = 0, size = 8) +
+   geom_text(aes(x = 0, y = 25000, label = "P = 0.02"), hjust = 0, size = 8) +
    labs(title = "c. Coral", y = "",
         x = "Coral cover") +
    my_theme 
@@ -1260,7 +1430,7 @@ erosion_pred_data <- erosion_pred_data %>%
    geom_point(data = urchin_erosion_master, aes(x = Macroalgae, y = Bioerosion)) +
    geom_line(data = erosion_macroalgae_data, aes(x = Macroalgae, y = Bioerosion), size = 1.5) +
    geom_ribbon(data = erosion_macroalgae_data, aes(x = Macroalgae, ymin = lower.CI, ymax = upper.CI), alpha = 0.5) +
-   geom_text(aes(x = 0.01, y = 5000, label = "P = 0.52"), hjust = 0, size = 8) +
+   geom_text(aes(x = 0.01, y = 5000, label = "P = 0.49"), hjust = 0, size = 8) +
    labs(title = "d. Macroalgae", y = "",
         x = "Macroalgae cover") +
    my_theme 
@@ -1271,7 +1441,7 @@ erosion_pred_data <- erosion_pred_data %>%
    geom_point(data = urchin_erosion_master, aes(x = CCA, y = Bioerosion)) +
    geom_line(data = erosion_CCA_data, aes(x = CCA, y = Bioerosion), size = 1.5) +
    geom_ribbon(data = erosion_CCA_data, aes(x = CCA, ymin = lower.CI, ymax = upper.CI), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 5000, label = "P = 0.27"), hjust = 0, size = 8) +
+   geom_text(aes(x = 0, y = 5000, label = "P = 0.17"), hjust = 0, size = 8) +
    labs(title = "e. CCA", y = bquote('Erosion rate (mg ('*day^-1*')'),
         x = "CCA cover") +
    my_theme 
@@ -1282,7 +1452,7 @@ erosion_pred_data <- erosion_pred_data %>%
    geom_point(data = urchin_erosion_master, aes(x = Depth_m, y = Bioerosion)) +
    geom_line(data = erosion_depth_data, aes(x = Depth_m, y = Bioerosion), size = 1.5) +
    geom_ribbon(data = erosion_depth_data, aes(x = Depth_m, ymin = lower.CI, ymax = upper.CI), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 5000, label = "P = 0.13"), hjust = 0, size = 8) +
+   geom_text(aes(x = 0, y = 5000, label = "P = 0.11"), hjust = 0, size = 8) +
    labs(title = "f. Depth", y = "",
         x = "Depth (m)") +
    my_theme 
@@ -1293,9 +1463,9 @@ erosion_pred_data <- erosion_pred_data %>%
    geom_point(data = urchin_erosion_master, aes(x = Herbivorous_fish, y = Bioerosion)) +
    geom_line(data = erosion_herb_data, aes(x = Herbivorous_fish, y = Bioerosion), size = 1.5) +
    geom_ribbon(data = erosion_herb_data, aes(x = Herbivorous_fish, ymin = lower.CI, ymax = upper.CI), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 5000, label = "P = 0.24"), hjust = 0, size = 8) +
-   labs(title = "f. Herbivorous fish", y = "",
-        x = bquote('Herbivore density (Fish '*m^-2*')')) +
+   geom_text(aes(x = 0, y = 5000, label = "P = 0.31"), hjust = 0, size = 8) +
+   labs(title = "g. Herbivorous fish", y = "",
+        x = bquote('Herbivore biomass (g '*m^-2*')')) +
    my_theme 
  )
 
@@ -1304,9 +1474,9 @@ erosion_pred_data <- erosion_pred_data %>%
    geom_point(data = urchin_erosion_master, aes(x = Urchin_predator, y = Bioerosion)) +
    geom_line(data = erosion_pred_data, aes(x = Urchin_predator, y = Bioerosion), size = 1.5) +
    geom_ribbon(data = erosion_pred_data, aes(x = Urchin_predator, ymin = lower.CI, ymax = upper.CI), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 5000, label = "P = 0.39"), hjust = 0, size = 8) +
-   labs(title = "f. Urchin predators", y = "",
-        x = bquote('Predator density (Fish '*m^-2*')')) +
+   geom_text(aes(x = 0, y = 5000, label = "P = 0.38"), hjust = 0, size = 8) +
+   labs(title = "h. Urchin predators", y = "",
+        x = bquote('Predator biomass (g '*m^-2*')')) +
    my_theme 
  )
 
