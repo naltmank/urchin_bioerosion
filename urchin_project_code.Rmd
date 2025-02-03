@@ -148,15 +148,15 @@ world <- st_transform(world, crs = 4326)
 
 lit_expanded <- lit %>%
   separate_rows(ecoregion, sep = ";") %>%  # Split multiple ecoregions into separate rows
-  mutate(Ecoregion = trimws(ecoregion))   # Remove any leading/trailing whitespace
-
+  mutate(Ecoregion = base::trimws(ecoregion))   # Remove any leading/trailing whitespace
+lit_expanded$Ecoregion <- trimws(lit_expanded$ecoregion) # need to re-run the trim whitespace for some reason
 
 
 # get count of number of studies per ecoregion
 ecoreg_sum <- lit_expanded %>% 
-  group_by(ecoregion) %>% 
+  group_by(Ecoregion) %>% 
   summarize(num_studies = n()) %>% 
-  mutate(ECOREGION = ecoregion) # make name match that in meow_ecos
+  mutate(ECOREGION = Ecoregion) # make name match that in meow_ecos
 
 meow_pub <- meow_ecos %>% 
   left_join(ecoreg_sum, by = "ECOREGION")
@@ -170,20 +170,19 @@ meow_pub <- st_transform(meow_pub, crs = 4326)
   geom_sf(data = world, fill = "black", color = "black", size = 0.05) + # background color for continents (black)
   theme_bw() +
   # format legend and color scheme
-  scale_fill_gradient(name = "Number of studies", 
-                      low = "yellow", 
-                      high = "brown3", 
-                      na.value = NA) +
+ scale_fill_gradient(name = "Number of studies", 
+                    low = "yellow", 
+                    high = "brown3", 
+                    na.value = NA,
+                    limits = c(1, 50),  # Fix the scale to match the original
+                    breaks = seq(0, 49, by = 10)) + 
   labs(title = "b.") +
   theme(text = element_text(size = 15)) + # increase text size
   coord_sf(xlim = c(-180, 180), ylim = c(-90, 90), expand = FALSE) +
   theme(panel.grid.major = element_line(colour = 'grey50', size = 0.2, linetype = 3))) # add grid lines 
 ```
 
-```{r lit review panel, fig.height=8, fig.width = 10}
-(lit_panel <- ggpubr::ggarrange(time_plt, ecoreg_plt, nrow = 2, ncol = 1))
-# ggsave(filename = "output/lit_review_summary_panel_v1.png", lit_panel, height = 8, width = 10)
-```
+
 
 ```{r repeat map with just erosion}
 erosion_lit <- subset(lit_expanded, focus != "herbivory")
@@ -192,9 +191,9 @@ erosion_lit <- subset(lit_expanded, focus != "herbivory")
 
 # get count of number of studies per ecoregion
 erosion_ecoreg_sum <- erosion_lit %>% 
-  group_by(ecoregion) %>% 
+  group_by(Ecoregion) %>% 
   summarize(num_studies = n()) %>% 
-  mutate(ECOREGION = ecoregion) # make name match that in meow_ecos
+  mutate(ECOREGION = Ecoregion) # make name match that in meow_ecos
 
 meow_erosion_pub <- meow_ecos %>% 
   left_join(erosion_ecoreg_sum, by = "ECOREGION")
@@ -203,18 +202,39 @@ meow_erosion_pub <- meow_ecos %>%
 meow_erosion_pub <- st_transform(meow_erosion_pub, crs = 4326)
 
 (ecoreg_erosion_plt <- ggplot() +
-  # color the ecoregions based on the number of studies they have
   geom_sf(data = meow_erosion_pub, aes(fill = num_studies), color = NA, linewidth = 0) +
-  geom_sf(data = world, fill = "black", color = "black", size = 0.05) + # background color for continents (black)
+  geom_sf(data = world, fill = "black", color = "black", size = 0.05) + 
   theme_bw() +
-  # format legend and color scheme using RColorBrewer
-  scale_fill_gradient(name = "Number of studies", 
-                      low = "yellow", 
-                      high = "red", 
-                      na.value = NA) +
+scale_fill_gradient(name = "Number of studies", 
+                    low = "yellow", 
+                    high = "brown3", 
+                    na.value = NA,
+                    limits = c(1, 50),  # Fix the scale to match the original
+                    breaks = seq(0, 49, by = 10)) +
   theme(text = element_text(size = 15)) + # increase text size
+  labs(title = "c.") +
   coord_sf(xlim = c(-180, 180), ylim = c(-90, 90), expand = FALSE) +
   theme(panel.grid.major = element_line(colour = 'grey50', size = 0.2, linetype = 3))) # add grid lines 
+```
+
+```{r lit review panel, fig.height=12, fig.width = 10}
+(lit_panel <- ggpubr::ggarrange(time_plt, ggarrange(ecoreg_plt,
+                                                    ecoreg_erosion_plt, nrow = 2, common.legend = TRUE,  legend = "right"),
+                                nrow = 2, heights = c(1, 2), ncol = 1))
+# ggsave(filename = "output/lit_review_summary_panel_v2.png", lit_panel, height = 12, width = 10)
+```
+
+```{r lit urchin summary stats}
+lit_urchins <- lit %>%
+  separate_rows(focal_species, sep = ";") %>%  # Split urchins
+  mutate(focal_species = trimws(focal_species))   # Remove any leading/trailing whitespace
+
+# get list of species alphabetically
+lit_urchins_list <- sort(unique(lit_urchins$focal_species))
+
+# get list of erosion ecoregions
+erosion_ecoreg_list <- sort(unique(droplevels(subset(lit_expanded, focus != "herbivory"))$Ecoregion))
+
 ```
 
 ```{r prep urchin field data}
@@ -474,6 +494,106 @@ emmeans(boring_zi, pairwise ~ Protection.status | Site)
 boring_dens_sig <- c("*", "**", "*", "***")
 ```
 
+```{r reduced grazing urchin model}
+## Refining models to be more specific to our actual questions
+
+grazing_pois_2 <- glmmTMB(grazing_urchin ~ Protection.status*Site + Herbivorous_fish + `Urchin predator`, family = poisson, data = urchin_guild_master) 
+plot(simulateResiduals(grazing_pois_2)) # non-normal residuals, violates heterogeneity of variance
+
+grazing_nb_2 <- glmmTMB(grazing_urchin ~ Protection.status*Site + Herbivorous_fish + `Urchin predator`, family = nbinom2(), data = urchin_guild_master) 
+plot(simulateResiduals(grazing_nb_2)) # no issues
+
+grazing_zi_2 <- glmmTMB(grazing_urchin ~ Protection.status*Site + Herbivorous_fish + `Urchin predator`, ziformula = ~Site, family = nbinom2(), data = urchin_guild_master)
+plot(simulateResiduals(grazing_zi_2)) # no issues
+
+AICc(grazing_pois_2, grazing_nb_2, grazing_zi_2) # zi is best
+
+summary(grazing_zi_2)
+#                  Estimate Std. Error z value Pr(>|z|)
+# (Intercept)       -0.2348     0.3692  -0.636    0.525
+# SiteKaneohe       -0.4744     2.7319  -0.174    0.862
+# SiteNorth Shore  -19.5422  6363.6766  -0.003    0.998
+# SiteWaikiki       -2.2286     1.5540  -1.434    0.152
+
+Anova(grazing_zi_2)
+#                          Chisq Df Pr(>Chisq)    
+# Protection.status       5.3582  1    0.02062 *  
+# Site                   50.9687  3  4.968e-11 ***
+# Herbivorous_fish        1.5629  1    0.21124    
+# `Urchin predator`       0.5389  1    0.46288    
+# Protection.status:Site 22.8513  3  4.337e-05 ***
+# pairwise comparisons for site and protection status interaction
+
+emmeans(grazing_zi_2, pairwise ~ Protection.status | Site)
+# Site = Hanauma:
+#  contrast                estimate    SE  df z.ratio p.value
+#  Protected - Unprotected     1.83 0.720 Inf   2.538  0.0111
+# 
+# Site = Kaneohe:
+#  contrast                estimate    SE  df z.ratio p.value
+#  Protected - Unprotected    -1.81 1.260 Inf  -1.436  0.1511
+# 
+# Site = North Shore:
+#  contrast                estimate    SE  df z.ratio p.value
+#  Protected - Unprotected    -1.02 0.511 Inf  -2.006  0.0449
+# 
+# Site = Waikiki:
+#  contrast                estimate    SE  df z.ratio p.value
+#  Protected - Unprotected    -1.50 0.577 Inf  -2.606  0.0092
+
+grazing_dens_sig <- c("*", "", "*", "**")
+```
+
+```{r reduced boring model}
+
+boring_pois_2 <- glmmTMB(boring_urchin ~ Protection.status*Site + Herbivorous_fish + `Urchin predator`, family = poisson, data = urchin_guild_master) 
+plot(simulateResiduals(boring_pois_2)) # totally messed up
+
+boring_nb_2 <- glmmTMB(boring_urchin ~ Protection.status*Site + Herbivorous_fish + `Urchin predator`, family = nbinom2(), data = urchin_guild_master) 
+plot(simulateResiduals(boring_nb_2)) # some issues in qq and homogeneity
+
+boring_zi_2 <- glmmTMB(boring_urchin ~ Protection.status*Site + Herbivorous_fish + `Urchin predator`, ziformula = ~Site, family = nbinom2(), data = urchin_guild_master)
+plot(simulateResiduals(boring_zi_2)) # no issues
+
+AICc(boring_pois_2, boring_nb_2, boring_zi_2) # zi is best
+
+summary(boring_zi_2)
+
+#                   Estimate Std. Error z value Pr(>|z|)    
+# (Intercept)       -2.53285    0.61202  -4.139  3.5e-05 ***
+# SiteKaneohe        3.63349    0.73194   4.964  6.9e-07 ***
+# SiteNorth Shore   -0.03067    0.87806  -0.035    0.972    
+# SiteWaikiki      -17.50095 4090.01597  -0.004    0.997    
+
+Anova(boring_zi_2)
+#                          Chisq Df Pr(>Chisq)    
+# Protection.status      10.3020  1  0.0013289 ** 
+# Site                   26.0492  3  9.314e-06 ***
+# Herbivorous_fish        5.7067  1  0.0169007 *  
+# `Urchin predator`       0.4036  1  0.5252603    
+# Protection.status:Site 21.0024  3  0.0001052 ***
+
+
+emmeans(boring_zi_2, pairwise ~ Protection.status | Site)
+# Site = Hanauma:
+#  contrast                estimate    SE  df z.ratio p.value
+#  Protected - Unprotected   -1.150 0.316 Inf  -3.642  0.0003
+# 
+# Site = Kaneohe:
+#  contrast                estimate    SE  df z.ratio p.value
+#  Protected - Unprotected   -2.445 0.780 Inf  -3.133  0.0017
+# 
+# Site = North Shore:
+#  contrast                estimate    SE  df z.ratio p.value
+#  Protected - Unprotected    0.337 0.314 Inf   1.072  0.2838
+# 
+# Site = Waikiki:
+#  contrast                estimate    SE  df z.ratio p.value
+#  Protected - Unprotected   -0.941 0.341 Inf  -2.757  0.0058
+
+boring_dens_sig <- c("***", "**", "", "**")
+```
+
 ```{r protection density boxplots, fig.height= 5, fig.width = 8}
 (grazing_density_plot <-
    ggplot() +
@@ -498,13 +618,14 @@ boring_dens_sig <- c("*", "**", "*", "***")
     geom_text(aes(x = c(1, 2, 3, 4), y = rep(600, 4), label = boring_dens_sig), size = 15) +
     scale_fill_manual(values = c("Protected" = "grey",
                       "Unprotected" = "white")) +
-    labs(title = "e. Boring urchin density", fill = "Protection status", y = bquote('Density (per 50'*m^2*' transect)') ) +
+    labs(title = "c. Boring urchin density", fill = "Protection status", y = bquote('Density (per 50'*m^2*' transect)') ) +
     my_theme
 
   )
    
 
 ```
+
 ```{r protection panel, fig.height = 11, fig.width=8}
 (protection_density_panel <-
    ggarrange(grazing_density_plot, boring_density_plot, nrow = 2, common.legend = T, legend = 'bottom'))
@@ -512,110 +633,17 @@ boring_dens_sig <- c("*", "**", "*", "***")
 
 
 ```{r density emtrends}
-# Simple_turf
-grazing_turf_data <- emmip(grazing_nb, ~ Simple_turf, at = list(Simple_turf = seq(0,1,0.01)), CIs = T, plotit = F)
-grazing_turf_data$Guild <- rep("Grazing", nrow(grazing_turf_data)) # add guild column for plot
-grazing_turf_data$Density <- exp(grazing_turf_data$yvar) # back transform model fit to response scale
-grazing_turf_data$lower.CI <- exp(grazing_turf_data$LCL) # repeat for 95% CI
-grazing_turf_data$upper.CI <- exp(grazing_turf_data$UCL)
+# REMOVED BENTHIC TRENDS ON JAN 31 - SEE VERSION HISTORY FOR THEIR INCLUSION
 
-boring_turf_data <- emmip(boring_zi, ~ Simple_turf, at = list(Simple_turf = seq(0,1,0.01)), CIs = T, plotit = F)
-boring_turf_data$Guild <- rep("Boring", nrow(boring_turf_data)) # add guild column for plot
-boring_turf_data$Density <- exp(boring_turf_data$yvar) # back transform model fit to response scale
-boring_turf_data$lower.CI <- exp(boring_turf_data$LCL) # repeat for 95% CI
-boring_turf_data$upper.CI <- exp(boring_turf_data$UCL)
-
-comb_turf_data <- rbind(grazing_turf_data, boring_turf_data)
-
-# filter ranges
-comb_turf_data <- comb_turf_data %>%
-  dplyr::filter(Simple_turf >= min(urchin_density_master$Simple_turf) & Simple_turf <= max(urchin_density_master$Simple_turf))
-
-# Coral
-grazing_coral_data <- emmip(grazing_nb, ~ Coral, at = list(Coral = seq(0,1,0.01)), CIs = T, plotit = F)
-grazing_coral_data$Guild <- rep("Grazing", nrow(grazing_coral_data)) # add guild column for plot
-grazing_coral_data$Density <- exp(grazing_coral_data$yvar) # back transform model fit to response scale
-grazing_coral_data$lower.CI <- exp(grazing_coral_data$LCL) # repeat for 95% CI
-grazing_coral_data$upper.CI <- exp(grazing_coral_data$UCL)
-
-boring_coral_data <- emmip(boring_zi, ~ Coral, at = list(Coral = seq(0,1,0.01)), CIs = T, plotit = F)
-boring_coral_data$Guild <- rep("Boring", nrow(boring_coral_data)) # add guild column for plot
-boring_coral_data$Density <- exp(boring_coral_data$yvar) # back transform model fit to response scale
-boring_coral_data$lower.CI <- exp(boring_coral_data$LCL) # repeat for 95% CI
-boring_coral_data$upper.CI <- exp(boring_coral_data$UCL)
-
-comb_coral_data <- rbind(grazing_coral_data, boring_coral_data)
-
-# filter ranges
-comb_coral_data <- comb_coral_data %>%
-  dplyr::filter(Coral >= min(urchin_density_master$Coral) & Coral <= max(urchin_density_master$Coral))
-
-# Macroalgae
-grazing_macroalgae_data <- emmip(grazing_nb, ~ Macroalgae, at = list(Macroalgae = seq(0,1,0.01)), CIs = T, plotit = F)
-grazing_macroalgae_data$Guild <- rep("Grazing", nrow(grazing_macroalgae_data)) # add guild column for plot
-grazing_macroalgae_data$Density <- exp(grazing_macroalgae_data$yvar) # back transform model fit to response scale
-grazing_macroalgae_data$lower.CI <- exp(grazing_macroalgae_data$LCL) # repeat for 95% CI
-grazing_macroalgae_data$upper.CI <- exp(grazing_macroalgae_data$UCL)
-
-boring_macroalgae_data <- emmip(boring_zi, ~ Macroalgae, at = list(Macroalgae = seq(0,1,0.01)), CIs = T, plotit = F)
-boring_macroalgae_data$Guild <- rep("Boring", nrow(boring_macroalgae_data)) # add guild column for plot
-boring_macroalgae_data$Density <- exp(boring_macroalgae_data$yvar) # back transform model fit to response scale
-boring_macroalgae_data$lower.CI <- exp(boring_macroalgae_data$LCL) # repeat for 95% CI
-boring_macroalgae_data$upper.CI <- exp(boring_macroalgae_data$UCL)
-
-comb_macroalgae_data <- rbind(grazing_macroalgae_data, boring_macroalgae_data)
-
-# filter ranges
-comb_macroalgae_data <- comb_macroalgae_data %>%
-  dplyr::filter(Macroalgae >= min(urchin_density_master$Macroalgae) & Macroalgae <= max(urchin_density_master$Macroalgae))
-
-
-# CCA
-grazing_CCA_data <- emmip(grazing_nb, ~ CCA, at = list(CCA = seq(0,1,0.01)), CIs = T, plotit = F)
-grazing_CCA_data$Guild <- rep("Grazing", nrow(grazing_CCA_data)) # add guild column for plot
-grazing_CCA_data$Density <- exp(grazing_CCA_data$yvar) # back transform model fit to response scale
-grazing_CCA_data$lower.CI <- exp(grazing_CCA_data$LCL) # repeat for 95% CI
-grazing_CCA_data$upper.CI <- exp(grazing_CCA_data$UCL)
-
-boring_CCA_data <- emmip(boring_zi, ~ CCA, at = list(CCA = seq(0,1,0.01)), CIs = T, plotit = F)
-boring_CCA_data$Guild <- rep("Boring", nrow(boring_CCA_data)) # add guild column for plot
-boring_CCA_data$Density <- exp(boring_CCA_data$yvar) # back transform model fit to response scale
-boring_CCA_data$lower.CI <- exp(boring_CCA_data$LCL) # repeat for 95% CI
-boring_CCA_data$upper.CI <- exp(boring_CCA_data$UCL)
-
-comb_CCA_data <- rbind(grazing_CCA_data, boring_CCA_data)
-
-# filter ranges
-comb_CCA_data <- comb_CCA_data %>%
-  dplyr::filter(CCA >= min(urchin_density_master$CCA) & CCA <= max(urchin_density_master$CCA))
-
-# Depth
-grazing_depth_data <- emmip(grazing_nb, ~ Depth_m, at = list(Depth_m = seq(0,50,0.25)), CIs = T, plotit = F)
-grazing_depth_data$Guild <- rep("Grazing", nrow(grazing_depth_data)) # add guild column for plot
-grazing_depth_data$Density <- exp(grazing_depth_data$yvar) # back transform model fit to response scale
-grazing_depth_data$lower.CI <- exp(grazing_depth_data$LCL) # repeat for 95% CI
-grazing_depth_data$upper.CI <- exp(grazing_depth_data$UCL)
-
-boring_depth_data <- emmip(boring_zi, ~ Depth_m, at = list(Depth_m = seq(0,50,0.25)), CIs = T, plotit = F)
-boring_depth_data$Guild <- rep("Boring", nrow(boring_depth_data)) # add guild column for plot
-boring_depth_data$Density <- exp(boring_depth_data$yvar) # back transform model fit to response scale
-boring_depth_data$lower.CI <- exp(boring_depth_data$LCL) # repeat for 95% CI
-boring_depth_data$upper.CI <- exp(boring_depth_data$UCL)
-
-comb_depth_data <- rbind(grazing_depth_data, boring_depth_data)
-
-# filter ranges
-comb_depth_data <- comb_depth_data %>%
-  dplyr::filter(Depth_m >= min(urchin_guild_master$Depth_m) & Depth_m <= max(urchin_guild_master$Depth_m))
 
 # Herbivorous_fish
-grazing_herb_data <- emmip(grazing_nb, ~ Herbivorous_fish, at = list(Herbivorous_fish = seq(0,2,0.01)), CIs = T, plotit = F)
+grazing_herb_data <- emmip(grazing_zi_2, ~ Herbivorous_fish, at = list(Herbivorous_fish = seq(0,2,0.01)), CIs = T, plotit = F)
 grazing_herb_data$Guild <- rep("Grazing", nrow(grazing_herb_data)) # add guild column for plot
 grazing_herb_data$Density <- exp(grazing_herb_data$yvar) # back transform model fit to response scale
 grazing_herb_data$lower.CI <- exp(grazing_herb_data$LCL) # repeat for 95% CI
 grazing_herb_data$upper.CI <- exp(grazing_herb_data$UCL)
 
-boring_herb_data <- emmip(boring_zi, ~ Herbivorous_fish, at = list(Herbivorous_fish = seq(0,2,0.01)), CIs = T, plotit = F)
+boring_herb_data <- emmip(boring_zi_2, ~ Herbivorous_fish, at = list(Herbivorous_fish = seq(0,2,0.01)), CIs = T, plotit = F)
 boring_herb_data$Guild <- rep("Boring", nrow(boring_herb_data)) # add guild column for plot
 boring_herb_data$Density <- exp(boring_herb_data$yvar) # back transform model fit to response scale
 boring_herb_data$lower.CI <- exp(boring_herb_data$LCL) # repeat for 95% CI
@@ -629,13 +657,13 @@ comb_herb_data <- comb_herb_data %>%
                   Herbivorous_fish <= max(urchin_guild_master$Herbivorous_fish))
 
 # `Urchin predator`
-grazing_pred_data <- emmip(grazing_nb, ~ `Urchin predator`, at = list(`Urchin predator` = seq(0,1,0.01)), CIs = T, plotit = F)
+grazing_pred_data <- emmip(grazing_zi_2, ~ `Urchin predator`, at = list(`Urchin predator` = seq(0,1,0.01)), CIs = T, plotit = F)
 grazing_pred_data$Guild <- rep("Grazing", nrow(grazing_pred_data)) # add guild column for plot
 grazing_pred_data$Density <- exp(grazing_pred_data$yvar) # back transform model fit to response scale
 grazing_pred_data$lower.CI <- exp(grazing_pred_data$LCL) # repeat for 95% CI
 grazing_pred_data$upper.CI <- exp(grazing_pred_data$UCL)
 
-boring_pred_data <- emmip(boring_zi, ~ `Urchin predator`, at = list(`Urchin predator` = seq(0,1,0.01)), CIs = T, plotit = F)
+boring_pred_data <- emmip(boring_zi_2, ~ `Urchin predator`, at = list(`Urchin predator` = seq(0,1,0.01)), CIs = T, plotit = F)
 boring_pred_data$Guild <- rep("Boring", nrow(boring_pred_data)) # add guild column for plot
 boring_pred_data$Density <- exp(boring_pred_data$yvar) # back transform model fit to response scale
 boring_pred_data$lower.CI <- exp(boring_pred_data$LCL) # repeat for 95% CI
@@ -643,7 +671,7 @@ boring_pred_data$upper.CI <- exp(boring_pred_data$UCL)
 
 comb_pred_data <- rbind(grazing_pred_data, boring_pred_data)
 # rename column for filtering
-colnames(comb_pred_data)[1] <- "Urchin_predator"
+colnames(comb_pred_data)[13] <- "Urchin_predator"
 
 # filter ranges
 comb_pred_data <- comb_pred_data %>%
@@ -654,90 +682,6 @@ comb_pred_data <- comb_pred_data %>%
 
 
 ```{r density environment plots}
-(turf_plot <-
-  ggplot() +
-   geom_point(data = urchin_guild_master, aes(x = Simple_turf, y = grazing_urchin), colour = "skyblue") +
-   geom_point(data = urchin_guild_master, aes(x = Simple_turf, y = boring_urchin), colour = "coral") +
-   geom_line(data = comb_turf_data, aes(x = Simple_turf, y = Density, colour = Guild), size = 1.5) +
-   geom_ribbon(data = comb_turf_data, aes(x = Simple_turf, ymin = lower.CI, ymax = upper.CI, fill = Guild), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 500, label = "Grazing: P = 0.33\nBoring: P < 0.001"), hjust = 0, size = 8) +
-   scale_colour_manual(values = c("Grazing" = "skyblue",
-                      "Boring" = "coral")) +
-   scale_fill_manual(values = c("Grazing" = "skyblue",
-                      "Boring" = "coral") ) +
-   labs(title = "b. Turf cover", fill = "Urchin guild", colour = "Urchin guild", y = "",
-        x = "Turf cover") +
-   my_theme 
- )
-
-
-(coral_plot <-
-  ggplot() +
-   geom_point(data = urchin_guild_master, aes(x = Coral, y = grazing_urchin), colour = "skyblue") +
-   geom_point(data = urchin_guild_master, aes(x = Coral, y = boring_urchin), colour = "coral") +
-   geom_line(data = comb_coral_data, aes(x = Coral, y = Density, colour = Guild), size = 1.5) +
-   geom_ribbon(data = comb_coral_data, aes(x = Coral, ymin = lower.CI, ymax = upper.CI, fill = Guild), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 1700, label = "Grazing: P < 0.001\nBoring: P < 0.001"), hjust = 0, size = 8) +
-   scale_colour_manual(values = c("Grazing" = "skyblue",
-                      "Boring" = "coral")) +
-   scale_fill_manual(values = c("Grazing" = "skyblue",
-                      "Boring" = "coral") ) +
-   labs(title = "c. Coral cover", fill = "Urchin guild", colour = "Urchin guild", y = "",
-        x = "Coral cover") +
-   
-   my_theme 
- )
-
-(macroalgae_plot <-
-  ggplot() +
-   geom_point(data = urchin_guild_master, aes(x = Macroalgae, y = grazing_urchin), colour = "skyblue") +
-   geom_point(data = urchin_guild_master, aes(x = Macroalgae, y = boring_urchin), colour = "coral") +
-   geom_line(data = comb_macroalgae_data, aes(x = Macroalgae, y = Density, colour = Guild), size = 1.5) +
-   geom_ribbon(data = comb_macroalgae_data, aes(x = Macroalgae, ymin = lower.CI, ymax = upper.CI, fill = Guild), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 500, label = "Grazing: P = 0.045\nBoring: P = 0.23"), hjust = 0, size = 8) +
-   scale_colour_manual(values = c("Grazing" = "skyblue",
-                      "Boring" = "coral")) +
-   scale_fill_manual(values = c("Grazing" = "skyblue",
-                      "Boring" = "coral") ) +
-   labs(title = "d. Macroalgae cover", fill = "Urchin guild", colour = "Urchin guild", y = "",
-        x = "Macroalgae cover") +
-   
-   my_theme 
- )
-
-(CCA_plot <-
-  ggplot() +
-   geom_point(data = urchin_guild_master, aes(x = CCA, y = grazing_urchin), colour = "skyblue") +
-   geom_point(data = urchin_guild_master, aes(x = CCA, y = boring_urchin), colour = "coral") +
-   geom_line(data = comb_CCA_data, aes(x = CCA, y = Density, colour = Guild), size = 1.5) +
-   geom_ribbon(data = comb_CCA_data, aes(x = CCA, ymin = lower.CI, ymax = upper.CI, fill = Guild), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 500, label = "Grazing: P = 0.71\nBoring: P = 0.32"), hjust = 0, size = 8) +
-   scale_colour_manual(values = c("Grazing" = "skyblue",
-                      "Boring" = "coral")) +
-   scale_fill_manual(values = c("Grazing" = "skyblue",
-                      "Boring" = "coral") ) +
-   labs(title = "f. CCA cover", fill = "Urchin guild", colour = "Urchin guild", y = "",
-        x = "CCA cover") +
-   
-   my_theme 
- )
-
-(depth_plot <-
-  ggplot() +
-   geom_point(data = urchin_guild_master, aes(x = Depth_m, y = grazing_urchin), colour = "skyblue") +
-   geom_point(data = urchin_guild_master, aes(x = Depth_m, y = boring_urchin), colour = "coral") +
-   geom_line(data = comb_depth_data, aes(x = Depth_m, y = Density, colour = Guild), size = 1.5) +
-   geom_ribbon(data = comb_depth_data, aes(x = Depth_m, ymin = lower.CI, ymax = upper.CI, fill = Guild), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 500, label = "Grazing: P = 0.003\nBoring: P = 0.11"), hjust = 0, size = 8) +
-   scale_colour_manual(values = c("Grazing" = "skyblue",
-                      "Boring" = "coral")) +
-   scale_fill_manual(values = c("Grazing" = "skyblue",
-                      "Boring" = "coral") ) +
-   labs(title = "g. Depth", fill = "Urchin guild", colour = "Urchin guild", y = "",
-        x = "Depth (m)") +
-   
-   my_theme 
- )
 
 (herb_plot <-
   ggplot() +
@@ -745,12 +689,12 @@ comb_pred_data <- comb_pred_data %>%
    geom_point(data = urchin_guild_master, aes(x = Herbivorous_fish, y = boring_urchin), colour = "coral") +
    geom_line(data = comb_herb_data, aes(x = Herbivorous_fish, y = Density, colour = Guild), size = 1.5) +
    geom_ribbon(data = comb_herb_data, aes(x = Herbivorous_fish, ymin = lower.CI, ymax = upper.CI, fill = Guild), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 500, label = "Grazing: P = 0.023\nBoring: P = 0.21"), hjust = 0, size = 8) +
+   geom_text(aes(x = 0, y = 500, label = "Grazing: P = 0.21\nBoring: P = 0.02"), hjust = 0, size = 8) +
    scale_colour_manual(values = c("Grazing" = "skyblue",
                       "Boring" = "coral")) +
    scale_fill_manual(values = c("Grazing" = "skyblue",
                       "Boring" = "coral") ) +
-   labs(title = "h. Herbivore density", fill = "Urchin guild", colour = "Urchin guild", y = "",
+   labs(title = "b. Herbivore density", fill = "Urchin guild", colour = "Urchin guild", y = "",
         x = bquote('Herbivore biomass (g '*m^-2*')')) +
    
    my_theme 
@@ -763,12 +707,12 @@ comb_pred_data <- comb_pred_data %>%
    geom_point(data = urchin_guild_master, aes(x = `Urchin predator`, y = boring_urchin), colour = "coral") +
    geom_line(data = comb_pred_data, aes(x = Urchin_predator, y = Density, colour = Guild), size = 1.5) +
    geom_ribbon(data = comb_pred_data, aes(x = Urchin_predator, ymin = lower.CI, ymax = upper.CI, fill = Guild), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 500, label = "Grazing: P = 0.26\nBoring: P = 0.54"), hjust = 0, size = 8) +
+   geom_text(aes(x = 0, y = 500, label = "Grazing: P = 0.46\nBoring: P = 0.52"), hjust = 0, size = 8) +
    scale_colour_manual(values = c("Grazing" = "skyblue",
                       "Boring" = "coral")) +
    scale_fill_manual(values = c("Grazing" = "skyblue",
                       "Boring" = "coral") ) +
-   labs(title = "i. Predator density", fill = "Urchin guild", colour = "Urchin guild", y = "",
+   labs(title = "d. Predator density", fill = "Urchin guild", colour = "Urchin guild", y = "",
         x = bquote('Predator biomass (g '*m^-2*')')) +
    
    my_theme 
@@ -777,14 +721,14 @@ comb_pred_data <- comb_pred_data %>%
 
 ```
 
-```{r remaining density panel graph, fig.height=11, fig.width=25}
+```{r remaining density panel graph, fig.height=12, fig.width=12}
 (remaining_density_panel <-
-  ggarrange(turf_plot, coral_plot, macroalgae_plot, CCA_plot, depth_plot, herb_plot, pred_plot,
-            nrow = 2, ncol = 4, common.legend = T, legend = "bottom"))
+  ggarrange(herb_plot, pred_plot,
+            nrow = 2, ncol = 1, common.legend = T, legend = "bottom"))
 ```
 
-```{r combined density panel, fig.height=10, fig.width= 34}
-(full_density_panel <- ggarrange(protection_density_panel, remaining_density_panel, widths = c(0.235, 0.765)))
+```{r combined density panel, fig.height=10, fig.width= 16}
+(full_density_panel <- ggarrange(protection_density_panel, remaining_density_panel, widths = c(1, 1)))
 # ggsave(filename = "output/density_panel_graph_v3.png", full_density_panel, height = 10, width = 34)
 ```
 
@@ -837,7 +781,7 @@ cDens.species.scores$species <- rownames(cDens.species.scores)  # create a colum
 
 
 
-fit <- envfit(ord2 ~ Coral + Simple_turf + CCA + Macroalgae + Depth + Herbivorous_fish + Urchin_predator,
+fit <- envfit(ord2 ~  Herbivorous_fish + Urchin_predator,
               data = urchin_density_master_sub)
 env.scores <- as.data.frame(scores(fit, display = "vectors")) #extracts relevant scores from envifit
 env.scores <- cbind(env.scores, env.variables = rownames(env.scores)) #and then gives them their names
@@ -847,22 +791,17 @@ mult <- 4 # for plotting the envfit
   
 
 
-vegan::adonis2(urchin_density_m ~ Site*Protection.status + Coral + Simple_turf + CCA + Macroalgae + 
-          Depth + Herbivorous_fish + Urchin_predator, method = "bray", data = urchin_density_master_sub)
+vegan::adonis(urchin_density_m ~ Site*Protection.status + Herbivorous_fish + Urchin_predator, method = "bray", data = urchin_density_master_sub)
 
-#                         Df SumOfSqs      R2      F Pr(>F)    
-# Site                     3   1.5287 0.10259 4.8761  0.001 ***
-# Protection.status        1   0.1528 0.01026 1.4625  0.185    
-# Coral                    1   0.3950 0.02650 3.7794  0.011 *  
-# Simple_turf              1   0.9798 0.06575 9.3750  0.001 ***
-# CCA                      1   0.0702 0.00471 0.6714  0.575    
-# Macroalgae               1   0.0433 0.00291 0.4144  0.743    
-# Depth                    1   0.3700 0.02483 3.5405  0.020 *  
-# Herbivorous_fish         1   0.0531 0.00356 0.5082  0.691    
-# Urchin_predator          1   0.0474 0.00318 0.4534  0.754    
-# Site:Protection.status   3   1.0201 0.06845 3.2537  0.004 ** 
-# Residual                98  10.2417 0.68727                  
-# Total                  112  14.9021 1.00000  
+#                         Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)    
+# Site                     3    1.5287 0.50958  4.4120 0.10259  0.001 ***
+# Protection.status        1    0.1528 0.15284  1.3233 0.01026  0.238    
+# Herbivorous_fish         1    0.2279 0.22789  1.9730 0.01529  0.122    
+# Urchin_predator          1    0.0681 0.06813  0.5899 0.00457  0.600    
+# Site:Protection.status   3    1.0279 0.34264  2.9666 0.06898  0.006 ** 
+# Residuals              103   11.8965 0.11550         0.79831           
+# Total                  112   14.9021                 1.00000           
+
 
 ```
 
@@ -879,6 +818,7 @@ vegan::adonis2(urchin_density_m ~ Site*Protection.status + Coral + Simple_turf +
                                "North Shore" = "gold",
                                "Waikiki" = "springgreen2"
                               )) +
+  scale_linetype_manual(values = c("Protected" = "solid", "Unprotected" = "dashed")) +
   coord_equal() +
   theme_bw() + 
   theme(axis.title.x = element_text(size=22), 
@@ -901,7 +841,7 @@ vegan::adonis2(urchin_density_m ~ Site*Protection.status + Coral + Simple_turf +
                                      title.hjust =0.5,
                             nrow = 2),
          linetype = guide_legend(title.position="top",  # make shape legend title go above legend
-                                     title.hjust =0.5)
+                                     title.hjust =0.5, override.aes = list(colour = "black")) # force linetype to appear in legend
          ) +
   scale_shape_manual(values = c(16, 1) )  + 
   geom_segment(data = env.scores,
@@ -909,12 +849,12 @@ vegan::adonis2(urchin_density_m ~ Site*Protection.status + Coral + Simple_turf +
                     arrow = arrow(length = unit(0.25, "cm")), colour = "grey") + # arrows for envfit.
        geom_text(data = env.scores, # labels the environmental variable arrows * "mult" as for the arrows
                  aes(x = mult*NMDS1, y = mult*NMDS2, label=env.variables),
-                 size = 5,
+                 size = 10,
                  hjust = 0) +
-  geom_label(aes(x = 2, y = 2, label = "Stress = 0.07"), hjust = 1, size = 10)
+  geom_label(aes(x = 2, y = 2, label = "Stress = 0.07"), hjust = 1, size = 10) 
 )
 
-# ggsave(filename = "output/urchin_ordination.png", urchin_ord_plot, height = 15, width = 15)
+# ggsave(filename = "output/urchin_ordination_v2.png", urchin_ord_plot, height = 15, width = 15)
 ```
 
 ```{r bioerosion set up}
@@ -1259,8 +1199,7 @@ urchin_erosion_master$Urchin_predator <- urchin_guild_master$`Urchin predator`
 ```
 
 ```{r erosion model}
-erosion_mod <- glmmTMB(Bioerosion ~ Protection.status*Site + Coral +
-                      Simple_turf + Macroalgae + CCA + Depth_m + Herbivorous_fish + Urchin_predator,
+erosion_mod <- glmmTMB(Bioerosion ~ Protection.status*Site + Herbivorous_fish + Urchin_predator,
            data = urchin_erosion_master, family = ziGamma(link = "log"), 
            ziformula = ~  Site) 
 plot(simulateResiduals(erosion_mod)) # no problems detected
@@ -1273,16 +1212,11 @@ summary(erosion_mod)
 # SiteWaikiki     -1.714e+01  3.377e+03  -0.005    0.996   
 Anova(erosion_mod)
 #                          Chisq Df Pr(>Chisq)    
-# Protection.status       0.3459  1    0.55642    
-# Site                   70.7104  3  3.007e-15 ***
-# Coral                   5.0901  1    0.02406 *  
-# Simple_turf             3.4042  1    0.06503 .  
-# Macroalgae              0.4670  1    0.49437    
-# CCA                     1.9014  1    0.16792    
-# Depth_m                 2.5845  1    0.10791    
-# Herbivorous_fish        1.0409  1    0.30762    
-# Urchin_predator         0.7859  1    0.37534    
-# Protection.status:Site 26.9048  3  6.164e-06 ***
+# Protection.status       2.0571  1    0.15150    
+# Site                   61.6569  3  2.601e-13 ***
+# Herbivorous_fish        2.7950  1    0.09456 .  
+# Urchin_predator         0.0131  1    0.90873    
+# Protection.status:Site 41.9704  3  4.071e-09 ***
 
 ```
 
@@ -1291,76 +1225,21 @@ Anova(erosion_mod)
 emmeans(erosion_mod, pairwise ~ Protection.status | Site)
 # Site = Hanauma:
 #  contrast                estimate    SE  df z.ratio p.value
-#  Protected - Unprotected    1.102 0.739 Inf   1.492  0.1357
+#  Protected - Unprotected    1.633 0.709 Inf   2.302  0.0213
 # 
 # Site = Kaneohe:
 #  contrast                estimate    SE  df z.ratio p.value
-#  Protected - Unprotected   -3.403 1.478 Inf  -2.303  0.0213
+#  Protected - Unprotected   -3.529 1.290 Inf  -2.733  0.0063
 # 
 # Site = North Shore:
 #  contrast                estimate    SE  df z.ratio p.value
-#  Protected - Unprotected    0.675 0.549 Inf   1.230  0.2188
+#  Protected - Unprotected    0.224 0.576 Inf   0.388  0.6979
 # 
 # Site = Waikiki:
 #  contrast                estimate    SE  df z.ratio p.value
-#  Protected - Unprotected   -2.992 0.699 Inf  -4.279  <.0001
-erosion_protection_symb <- c("", "*", "", "***")
+#  Protected - Unprotected   -3.150 0.670 Inf  -4.705  <.0001
+erosion_protection_symb <- c("*", "**", "", "***")
 
-### turf
-erosion_turf_data <- emmip(erosion_mod, ~ Simple_turf, at = list(Simple_turf = seq(0,1,0.01)), CIs = T, plotit = F)
-erosion_turf_data$Guild <- rep("erosion", nrow(erosion_turf_data)) # add guild column for plot
-erosion_turf_data$Bioerosion <- exp(erosion_turf_data$yvar) # back transform model fit to response scale
-erosion_turf_data$lower.CI <- exp(erosion_turf_data$LCL) # repeat for 95% CI
-erosion_turf_data$upper.CI <- exp(erosion_turf_data$UCL)
-
-# filter ranges
-erosion_turf_data <- erosion_turf_data %>%
-  dplyr::filter(Simple_turf >= min(urchin_erosion_master$Simple_turf) & Simple_turf <= max(urchin_erosion_master$Simple_turf))
-
-
-# coral
-erosion_coral_data <- emmip(erosion_mod, ~ Coral, at = list(Coral = seq(0,1,0.01)), CIs = T, plotit = F)
-erosion_coral_data$Guild <- rep("erosion", nrow(erosion_coral_data)) # add guild column for plot
-erosion_coral_data$Bioerosion <- exp(erosion_coral_data$yvar) # back transform model fit to response scale
-erosion_coral_data$lower.CI <- exp(erosion_coral_data$LCL) # repeat for 95% CI
-erosion_coral_data$upper.CI <- exp(erosion_coral_data$UCL)
-
-# filter ranges
-erosion_coral_data <- erosion_coral_data %>%
-  dplyr::filter(Coral >= min(urchin_erosion_master$Coral) & Coral <= max(urchin_erosion_master$Coral))
-
-### macroalgae
-erosion_macroalgae_data <- emmip(erosion_mod, ~ Macroalgae, at = list(Macroalgae = seq(0,1,0.01)), CIs = T, plotit = F)
-erosion_macroalgae_data$Guild <- rep("erosion", nrow(erosion_macroalgae_data)) # add guild column for plot
-erosion_macroalgae_data$Bioerosion <- exp(erosion_macroalgae_data$yvar) # back transform model fit to response scale
-erosion_macroalgae_data$lower.CI <- exp(erosion_macroalgae_data$LCL) # repeat for 95% CI
-erosion_macroalgae_data$upper.CI <- exp(erosion_macroalgae_data$UCL)
-
-# filter ranges
-erosion_macroalgae_data <- erosion_macroalgae_data %>%
-  dplyr::filter(Macroalgae >= min(urchin_erosion_master$Macroalgae) & Macroalgae <= max(urchin_erosion_master$Macroalgae))
-
-# CCA
-erosion_CCA_data <- emmip(erosion_mod, ~ CCA, at = list(CCA = seq(0,1,0.01)), CIs = T, plotit = F)
-erosion_CCA_data$Guild <- rep("erosion", nrow(erosion_CCA_data)) # add guild column for plot
-erosion_CCA_data$Bioerosion <- exp(erosion_CCA_data$yvar) # back transform model fit to response scale
-erosion_CCA_data$lower.CI <- exp(erosion_CCA_data$LCL) # repeat for 95% CI
-erosion_CCA_data$upper.CI <- exp(erosion_CCA_data$UCL)
-
-# filter ranges
-erosion_CCA_data <- erosion_CCA_data %>%
-  dplyr::filter(CCA >= min(urchin_erosion_master$CCA) & CCA <= max(urchin_erosion_master$CCA))
-
-# depth
-erosion_depth_data <- emmip(erosion_mod, ~ Depth_m, at = list(Depth_m = seq(0,20,0.5)), CIs = T, plotit = F)
-erosion_depth_data$Guild <- rep("erosion", nrow(erosion_depth_data)) # add guild column for plot
-erosion_depth_data$Bioerosion <- exp(erosion_depth_data$yvar) # back transform model fit to response scale
-erosion_depth_data$lower.CI <- exp(erosion_depth_data$LCL) # repeat for 95% CI
-erosion_depth_data$upper.CI <- exp(erosion_depth_data$UCL)
-
-# filter ranges
-erosion_depth_data <- erosion_depth_data %>%
-  dplyr::filter(Depth_m >= min(urchin_erosion_master$Depth_m) & Depth_m <= max(urchin_erosion_master$Depth_m))
 
 # herb
 erosion_herb_data <- emmip(erosion_mod, ~ Herbivorous_fish, at = list(Herbivorous_fish = seq(0,10,0.01)), CIs = T, plotit = F)
@@ -1403,68 +1282,14 @@ erosion_pred_data <- erosion_pred_data %>%
    my_theme
   )
 
-(turf_plot <-
-  ggplot() +
-   geom_point(data = urchin_erosion_master, aes(x = Simple_turf, y = Bioerosion)) +
-   geom_line(data = erosion_turf_data, aes(x = Simple_turf, y = Bioerosion), size = 1.5) +
-   geom_ribbon(data = erosion_turf_data, aes(x = Simple_turf, ymin = lower.CI, ymax = upper.CI), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 5000, label = "P = 0.07"), hjust = 0, size = 8) +
-   labs(title = "b. Turf", y = "",
-        x = "Turf cover") +
-   my_theme 
- )
-
-(coral_plot <-
-  ggplot() +
-   geom_point(data = urchin_erosion_master, aes(x = Coral, y = Bioerosion)) +
-   geom_line(data = erosion_coral_data, aes(x = Coral, y = Bioerosion), size = 1.5) +
-   geom_ribbon(data = erosion_coral_data, aes(x = Coral, ymin = lower.CI, ymax = upper.CI), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 25000, label = "P = 0.02"), hjust = 0, size = 8) +
-   labs(title = "c. Coral", y = "",
-        x = "Coral cover") +
-   my_theme 
- )
-
-(macroalgae_plot <-
-  ggplot() +
-   geom_point(data = urchin_erosion_master, aes(x = Macroalgae, y = Bioerosion)) +
-   geom_line(data = erosion_macroalgae_data, aes(x = Macroalgae, y = Bioerosion), size = 1.5) +
-   geom_ribbon(data = erosion_macroalgae_data, aes(x = Macroalgae, ymin = lower.CI, ymax = upper.CI), alpha = 0.5) +
-   geom_text(aes(x = 0.01, y = 5000, label = "P = 0.49"), hjust = 0, size = 8) +
-   labs(title = "d. Macroalgae", y = "",
-        x = "Macroalgae cover") +
-   my_theme 
- )
-
-(CCA_plot <-
-  ggplot() +
-   geom_point(data = urchin_erosion_master, aes(x = CCA, y = Bioerosion)) +
-   geom_line(data = erosion_CCA_data, aes(x = CCA, y = Bioerosion), size = 1.5) +
-   geom_ribbon(data = erosion_CCA_data, aes(x = CCA, ymin = lower.CI, ymax = upper.CI), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 5000, label = "P = 0.17"), hjust = 0, size = 8) +
-   labs(title = "e. CCA", y = bquote('Erosion rate (mg ('*day^-1*')'),
-        x = "CCA cover") +
-   my_theme 
- )
-
-(depth_plot <-
-  ggplot() +
-   geom_point(data = urchin_erosion_master, aes(x = Depth_m, y = Bioerosion)) +
-   geom_line(data = erosion_depth_data, aes(x = Depth_m, y = Bioerosion), size = 1.5) +
-   geom_ribbon(data = erosion_depth_data, aes(x = Depth_m, ymin = lower.CI, ymax = upper.CI), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 5000, label = "P = 0.11"), hjust = 0, size = 8) +
-   labs(title = "f. Depth", y = "",
-        x = "Depth (m)") +
-   my_theme 
- )
 
 (herb_plot <-
   ggplot() +
    geom_point(data = urchin_erosion_master, aes(x = Herbivorous_fish, y = Bioerosion)) +
    geom_line(data = erosion_herb_data, aes(x = Herbivorous_fish, y = Bioerosion), size = 1.5) +
    geom_ribbon(data = erosion_herb_data, aes(x = Herbivorous_fish, ymin = lower.CI, ymax = upper.CI), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 5000, label = "P = 0.31"), hjust = 0, size = 8) +
-   labs(title = "g. Herbivorous fish", y = "",
+   geom_text(aes(x = 0, y = 5000, label = "P = 0.09"), hjust = 0, size = 8) +
+   labs(title = "b. Herbivorous fish", y = "",
         x = bquote('Herbivore biomass (g '*m^-2*')')) +
    my_theme 
  )
@@ -1474,16 +1299,17 @@ erosion_pred_data <- erosion_pred_data %>%
    geom_point(data = urchin_erosion_master, aes(x = Urchin_predator, y = Bioerosion)) +
    geom_line(data = erosion_pred_data, aes(x = Urchin_predator, y = Bioerosion), size = 1.5) +
    geom_ribbon(data = erosion_pred_data, aes(x = Urchin_predator, ymin = lower.CI, ymax = upper.CI), alpha = 0.5) +
-   geom_text(aes(x = 0, y = 5000, label = "P = 0.38"), hjust = 0, size = 8) +
-   labs(title = "h. Urchin predators", y = "",
+   geom_text(aes(x = 0, y = 5000, label = "P = 0.91"), hjust = 0, size = 8) +
+   labs(title = "c. Urchin predators", y = "",
         x = bquote('Predator biomass (g '*m^-2*')')) +
    my_theme 
  )
 
 ```
-```{r erosion panel graph, fig.height = 10, fig.width = 30}
-(erosion_panel <- ggarrange(erosion_site_plot, turf_plot, coral_plot, macroalgae_plot, CCA_plot, depth_plot, herb_plot, pred_plot,
-          nrow = 2, ncol = 4, common.legend = T, legend = "bottom"))
 
-# ggsave(filename = "output/erosion_panel_v1.png", erosion_panel, height = 10, width = 30)
+```{r erosion panel graph, fig.height = 6, fig.width = 19}
+(erosion_panel <- ggarrange(erosion_site_plot, herb_plot, pred_plot,
+          nrow = 1, ncol = 3, common.legend = T, legend = "bottom", widths = c(0.4, 0.3, 0.3)))
+
+# ggsave(filename = "output/erosion_panel_v2.png", erosion_panel, height = 6, width = 19)
 ```
